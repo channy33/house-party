@@ -825,18 +825,27 @@
     var count = Math.round(geo.w * geo.h / 40);
     var span = geo.bottom - geo.top;
     lights = [];
-    for (var i = 0; i < count; i++) {
+    /* 가장자리 몫: 실루엣과 삐져나온 가지 끝을 따라 따로 더 박는다 */
+    var edgeCount = Math.round(count * 0.4);
+    for (var i = 0; i < count + edgeCount; i++) {
+      var edge = i >= count;
       var t = 0.02 + Math.sqrt(rnd()) * 0.97;
       var u = rnd() * 2 - 1;
-      u = (u < 0 ? -1 : 1) * Math.pow(Math.abs(u), 0.78);
+      if (edge) {
+        u = (u < 0 ? -1 : 1) * (0.9 + rnd() * 0.22);
+      } else {
+        u = (u < 0 ? -1 : 1) * Math.pow(Math.abs(u), 0.78);
+      }
       var big = rnd() < 0.05;
       lights.push({
-        x: geo.cx + u * halfWidth(t) * 0.97 + (rnd() - 0.5) * 3,
-        y: geo.top + t * span + (rnd() - 0.5) * 4,
+        edge: edge,
+        x: geo.cx + u * halfWidth(t) * (edge ? 1 : 0.97) + (rnd() - 0.5) * (edge ? 4 : 3),
+        y: geo.top + t * span + (rnd() - 0.5) * (edge ? 6 : 4),
         r: big ? 1.3 + rnd() * 0.5 : 0.45 + rnd() * 0.7,
         base: 0.55 + rnd() * 0.45,
         phase: rnd() * Math.PI * 2,
-        speed: 0.5 + rnd() * 1.9,
+        speed: edge ? 1.6 + rnd() * 2.4 : 0.5 + rnd() * 1.9,
+        glint: rnd() < 0.04,
         amber: rnd() < 0.1,
         /* 켜기 전에도 빛나는 건 넷 중 하나. 나머지는 십자가를 누르면 켜진다 */
         early: rnd() < 0.25,
@@ -925,9 +934,13 @@
     var tsec = now / 1000;
     /* 빛은 더해지며 쌓이므로(lighter) 번짐을 아주 작게 — 알이 또렷해야 은은하다 */
     var glow = 2.6 + 1.1 * litMix;
+    var glints = [];
     for (var i = 0; i < lights.length; i++) {
       var L = lights[i];
-      var tw = reduceMotion ? 0.85 : 0.62 + 0.38 * Math.sin(tsec * L.speed + L.phase);
+      var wave = 0.5 + 0.5 * Math.sin(tsec * L.speed + L.phase);
+      /* 가장자리는 잠깐씩 톡 튀듯 반짝이고, 안쪽은 부드럽게 숨 쉰다 */
+      var tw = reduceMotion ? 0.85
+        : (L.edge ? 0.3 + 0.7 * Math.pow(wave, 2.4) : 0.62 + 0.38 * (wave * 2 - 1));
       /* 켜기 전: 일부만 희미하게. 누르면 나머지가 저마다 조금씩 늦게 하나둘 켜진다 */
       var on = L.early
         ? 0.45 + 0.55 * litMix
@@ -935,8 +948,21 @@
       var a = on * L.base * tw * 0.9;
       if (a < 0.015) { continue; }
       ctx.globalAlpha = a > 1 ? 1 : a;
-      var s = L.r * glow;
+      var s = L.r * glow * (L.edge ? 1.15 : 1);
       ctx.drawImage(L.amber ? spriteAmber : spriteWarm, L.x - s, L.y - s, s * 2, s * 2);
+      if (L.glint && wave > 0.86 && a > 0.3) { glints.push(L, (wave - 0.86) / 0.14 * a); }
+    }
+    /* 몇몇 전구는 정점에서 가는 열십자 빛을 낸다 */
+    ctx.lineWidth = 0.7;
+    for (var gi = 0; gi < glints.length; gi += 2) {
+      var G = glints[gi], k = glints[gi + 1];
+      var len = G.r * 5 + 2.5;
+      ctx.globalAlpha = Math.min(1, k);
+      ctx.strokeStyle = "rgba(255,248,230,0.9)";
+      ctx.beginPath();
+      ctx.moveTo(G.x - len, G.y); ctx.lineTo(G.x + len, G.y);
+      ctx.moveTo(G.x, G.y - len); ctx.lineTo(G.x, G.y + len);
+      ctx.stroke();
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
