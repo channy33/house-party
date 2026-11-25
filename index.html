@@ -582,7 +582,7 @@
   var foliageDark = null;  // 불 꺼진 바늘잎
   var foliageLit  = null;  // 불 받은 바늘잎
   var lights = [];
-  var UNLIT = 0.24;
+  var UNLIT = 0.14;
   var level = UNLIT, levelTarget = UNLIT; // 트리 전구 밝기: 처음엔 은은하게
   var cross = 0,    crossTarget = 0;      // 십자가 빛
   var running = true;
@@ -697,7 +697,7 @@
   }
   function buildLights() {
     var rnd = seeded(1225);
-    var count = Math.round(geo.w * geo.h / 52);
+    var count = Math.round(geo.w * geo.h / 85);
     var span = geo.bottom - geo.top;
     lights = [];
     for (var i = 0; i < count; i++) {
@@ -712,7 +712,10 @@
         base: 0.55 + rnd() * 0.45,
         phase: rnd() * Math.PI * 2,
         speed: 0.5 + rnd() * 1.9,
-        amber: rnd() < 0.14
+        amber: rnd() < 0.14,
+        /* 켜기 전에도 빛나는 건 셋 중 하나. 나머지는 십자가를 누르면 켜진다 */
+        early: rnd() < 0.3,
+        delay: rnd()
       });
     }
   }
@@ -772,13 +775,15 @@
     if (!running || !geo) { return; }
     level += (levelTarget - level) * (reduceMotion ? 1 : 0.03);
     cross += (crossTarget - cross) * (reduceMotion ? 1 : 0.07);
+    /* 0: 켜기 전, 1: 다 켜짐 */
+    var litMix = Math.max(0, Math.min(1, (level - UNLIT) / (1 - UNLIT)));
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
     ctx.clearRect(0, 0, geo.cw, geo.ch);
     /* 트리 뒤로 퍼지는 빛 */
     var midY = geo.top + (geo.bottom - geo.top) * 0.58;
     var bloom = ctx.createRadialGradient(geo.cx, midY, 0, geo.cx, midY, geo.w * 0.95);
-    bloom.addColorStop(0, "rgba(255,200,120," + (0.04 + 0.42 * level) + ")");
-    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.14 * level) + ")");
+    bloom.addColorStop(0, "rgba(255,200,120," + (0.03 + 0.36 * litMix) + ")");
+    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.12 * litMix) + ")");
     bloom.addColorStop(1, "rgba(255,180,90,0)");
     ctx.fillStyle = bloom;
     ctx.fillRect(0, 0, geo.cw, geo.ch);
@@ -786,19 +791,23 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(foliageDark, 0, 0);
     /* 켜기 전엔 바늘잎이 거의 어둡고, 켜지면 노란빛 초록으로 살아난다 */
-    var litMix = Math.max(0, Math.min(1, (level - UNLIT) / (1 - UNLIT)));
-    ctx.globalAlpha = 0.12 + 0.88 * Math.pow(litMix, 1.1);
+    ctx.globalAlpha = 0.05 + 0.95 * Math.pow(litMix, 1.1);
     ctx.drawImage(foliageLit, 0, 0);
     ctx.globalAlpha = 1;
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
     /* 전구 */
     ctx.globalCompositeOperation = "lighter";
     var tsec = now / 1000;
-    var glow = 5 + 6 * level;
+    /* 빛은 더해지며 쌓이므로(lighter) 다 켜졌을 때 하얗게 타지 않게 번짐을 작게 둔다 */
+    var glow = 3.5 + 2.8 * litMix;
     for (var i = 0; i < lights.length; i++) {
       var L = lights[i];
       var tw = reduceMotion ? 0.85 : 0.62 + 0.38 * Math.sin(tsec * L.speed + L.phase);
-      var a = level * L.base * tw;
+      /* 켜기 전: 일부만 희미하게. 누르면 나머지가 저마다 조금씩 늦게 하나둘 켜진다 */
+      var on = L.early
+        ? 0.42 + 0.58 * litMix
+        : Math.max(0, Math.min(1, (litMix - L.delay * 0.55) / 0.45));
+      var a = on * L.base * tw * 0.8;
       if (a < 0.015) { continue; }
       ctx.globalAlpha = a > 1 ? 1 : a;
       var s = L.r * glow;
@@ -832,11 +841,13 @@
   var hint   = document.getElementById("hint");
   var invite = document.getElementById("invite");
   var lit = false;
-  function light() {
+  /* instant 는 화면 그림을 뜰 때만 쓴다 (shots.mjs) — 애니메이션을 건너뛰고 끝 상태로 */
+  function light(instant) {
     if (lit) { return; }
     lit = true;
     crossTarget = 1;
     levelTarget = 1;
+    if (instant === true) { level = 1; cross = 1; }
     stage.classList.add("is-lit");
     document.body.classList.add("lit");
     invite.hidden = false;
@@ -847,8 +858,8 @@
       invite.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 2600);
   }
-  document.getElementById("cross").addEventListener("click", light);
-  document.getElementById("skip").addEventListener("click", light);
+  document.getElementById("cross").addEventListener("click", function () { light(); });
+  document.getElementById("skip").addEventListener("click", function () { light(); });
   window.__lightTree = light;
   /* ───────── 참석 응답 ───────── */
   /* 응답이 모이는 곳 (Supabase). 이 키는 공개용이라 초대장에 들어가도 괜찮습니다.
