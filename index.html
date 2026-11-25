@@ -85,9 +85,9 @@
     opacity: 0;
     transition: opacity 2.4s ease;
     background:
-      radial-gradient(70% 50% at 50% 52%, rgba(255, 170, 80, .5) 0%, rgba(255,170,80,0) 74%),
-      radial-gradient(70% 34% at 50% 26%, rgba(255, 222, 160, .32) 0%, rgba(255,222,160,0) 70%),
-      linear-gradient(180deg, #2b1b0d 0%, #24170b 50%, #1b1a10 80%, #13261f 100%);
+      radial-gradient(64% 46% at 50% 54%, rgba(255, 186, 110, .16) 0%, rgba(255,186,110,0) 74%),
+      radial-gradient(60% 30% at 50% 26%, rgba(255, 226, 170, .14) 0%, rgba(255,226,170,0) 70%),
+      linear-gradient(180deg, #120e0b 0%, #110d0a 55%, #0f1611 82%, #13261f 100%);
   }
   .is-lit .sky--warm { opacity: 1; }
   /* 십자가가 켜지는 순간 한 번 번쩍 */
@@ -96,7 +96,7 @@
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    background: radial-gradient(55% 32% at 50% 30%, rgba(255, 240, 205, .85) 0%, rgba(255, 210, 140, .25) 45%, rgba(255,210,140,0) 75%);
+    background: radial-gradient(50% 28% at 50% 30%, rgba(255, 240, 205, .5) 0%, rgba(255, 210, 140, .14) 45%, rgba(255,210,140,0) 75%);
   }
   .is-lit .flash { animation: flash 1.6s ease-out forwards; }
   @keyframes flash {
@@ -576,9 +576,25 @@
   var canvas = document.getElementById("tree-canvas");
   var wrap   = document.getElementById("tree-wrap");
   var ctx    = canvas.getContext("2d");
-  var spriteWarm  = makeGlowSprite(255, 226, 168);
-  var spriteAmber = makeGlowSprite(255, 186, 96);
+  /* 레퍼런스처럼 번지지 않는 작은 전구 알: 가운데만 또렷하고 둘레는 아주 얇게 */
+  function makePinSprite(r, g, b) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 32;
+    var x = c.getContext("2d");
+    var grad = x.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0,    "rgba(255,255,255,1)");
+    grad.addColorStop(0.14, "rgba(" + r + "," + g + "," + b + ",1)");
+    grad.addColorStop(0.3,  "rgba(" + r + "," + g + "," + b + ",.28)");
+    grad.addColorStop(0.6,  "rgba(" + r + "," + g + "," + b + ",.05)");
+    grad.addColorStop(1,    "rgba(" + r + "," + g + "," + b + ",0)");
+    x.fillStyle = grad;
+    x.fillRect(0, 0, 32, 32);
+    return c;
+  }
+  var spriteWarm  = makePinSprite(255, 246, 226);
+  var spriteAmber = makePinSprite(255, 214, 150);
   var spriteRed   = makeGlowSprite(255, 64, 48);
+  var spriteGold  = makeGlowSprite(255, 210, 130);
   var geo = null;          // 트리 크기와 위치
   var foliageDark = null;  // 불 꺼진 바늘잎
   var foliageLit  = null;  // 불 받은 바늘잎
@@ -622,54 +638,107 @@
     buildReds();
     return true;
   }
-  /* 빨간 점전구: 몰리지 않게 줄마다 간격을 두고 고르게, 줄끼리는 엇갈리게 */
+  /* 장식: 레퍼런스처럼 빨간·금색 유리볼과, 가지를 따라 처진 은색 구슬 줄.
+     볼은 몰리지 않게 줄마다 간격을 두고 엇갈리게 단다. */
+  var garlands = [];
   function buildReds() {
     var rnd = seeded(777);
     var span = geo.bottom - geo.top;
-    var gap = Math.max(22, geo.w * 0.095);
+    var scale = geo.w / 265;
+    var gap = Math.max(30, geo.w * 0.15);
     reds = [];
-    var rows = 10;
+    var rows = 7;
     for (var r = 0; r < rows; r++) {
-      var t = 0.13 + (r / (rows - 1)) * 0.8;
-      var hw = halfWidth(t) * 0.86;
+      var t = 0.2 + (r / (rows - 1)) * 0.72;
+      var hw = halfWidth(t) * 0.8;
       var n = Math.max(1, Math.round((hw * 2) / gap));
       var step = (hw * 2) / n;
-      var shift = (r % 2) * step * 0.5;
       for (var k = 0; k < n; k++) {
-        var x = geo.cx - hw + step * 0.5 + k * step + shift - (r % 2 ? step * 0.25 : 0);
+        var x = geo.cx - hw + step * (k + 0.5) + (r % 2 ? step * 0.35 : -step * 0.15);
         if (Math.abs(x - geo.cx) > hw) { continue; }
         reds.push({
-          x: x + (rnd() - 0.5) * step * 0.35,
-          y: geo.top + t * span + (rnd() - 0.5) * gap * 0.45,
-          r: 2.1 + rnd() * 0.8,
-          phase: rnd() * Math.PI * 2,
-          speed: 0.35 + rnd() * 0.6
+          x: x + (rnd() - 0.5) * step * 0.3,
+          y: geo.top + t * span + (rnd() - 0.5) * gap * 0.35,
+          r: (3.2 + rnd() * 2.6) * scale,
+          gold: rnd() < 0.3
         });
       }
     }
+    /* 구슬 줄: 트리를 감싸며 한쪽으로 살짝 기울어 처진 줄 네 가닥 */
+    garlands = [];
+    [0.3, 0.47, 0.64, 0.81].forEach(function (t0, i) {
+      var y0 = geo.top + t0 * span;
+      var hw = halfWidth(t0 + 0.05) * 0.92;
+      var sag = span * 0.05;
+      var tilt = (i % 2 ? 1 : -1) * span * 0.035;
+      var beads = [];
+      var n = Math.round(hw * 2 / 2.6);
+      for (var b = 0; b <= n; b++) {
+        var p = b / n;
+        beads.push({
+          x: geo.cx - hw + p * hw * 2,
+          y: y0 + sag * 4 * p * (1 - p) + tilt * (p - 0.5),
+          tw: rnd() * Math.PI * 2
+        });
+      }
+      garlands.push(beads);
+    });
   }
   function drawReds(now, litMix) {
     var tsec = now / 1000;
-    var on = 0.4 + 0.6 * litMix;
+    var on = 0.35 + 0.65 * litMix;
+    /* 구슬 줄 */
+    ctx.globalCompositeOperation = "source-over";
+    for (var g = 0; g < garlands.length; g++) {
+      var beads = garlands[g];
+      for (var b = 0; b < beads.length; b++) {
+        var B = beads[b];
+        var sp = reduceMotion ? 0.8 : 0.65 + 0.35 * Math.sin(tsec * 1.3 + B.tw);
+        ctx.globalAlpha = (0.28 + 0.6 * litMix) * sp;
+        ctx.fillStyle = "#ece7dc";
+        ctx.beginPath();
+        ctx.arc(B.x, B.y, 0.95, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    /* 유리볼 */
     for (var i = 0; i < reds.length; i++) {
       var R = reds[i];
-      var pulse = reduceMotion ? 0.9 : 0.8 + 0.2 * Math.sin(tsec * R.speed + R.phase);
-      /* 붉은 번짐 */
-      ctx.globalCompositeOperation = "lighter";
-      ctx.globalAlpha = 0.55 * on * pulse;
-      var s = R.r * (3.2 + 1.6 * litMix);
-      ctx.drawImage(spriteRed, R.x - s, R.y - s, s * 2, s * 2);
-      /* 전구 알 — 번짐만 있으면 빨간 안개처럼 보여서, 또렷한 알을 따로 찍는다 */
-      ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = 0.55 + 0.45 * on;
-      var g = ctx.createRadialGradient(R.x - R.r * 0.3, R.y - R.r * 0.35, 0, R.x, R.y, R.r);
-      g.addColorStop(0, "rgba(255," + Math.round(150 + 70 * on) + "," + Math.round(130 + 60 * on) + ",1)");
-      g.addColorStop(0.45, "rgba(" + Math.round(200 + 50 * on) + ",40,34,1)");
-      g.addColorStop(1, "rgba(" + Math.round(120 + 40 * on) + ",14,14,1)");
-      ctx.fillStyle = g;
+      var x = R.x, y = R.y, r = R.r;
+      /* 고리 */
+      ctx.globalAlpha = 0.5 + 0.5 * on;
+      ctx.fillStyle = "rgb(" + Math.round(110 + 90 * on) + "," + Math.round(90 + 70 * on) + "," + Math.round(50 + 40 * on) + ")";
+      ctx.fillRect(x - r * 0.28, y - r * 1.12, r * 0.56, r * 0.3);
+      /* 볼 몸통: 왼쪽 위가 밝고 아래로 갈수록 깊어지는 유리 */
+      ctx.globalAlpha = 1;
+      var body = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+      if (R.gold) {
+        body.addColorStop(0,   "rgb(" + Math.round(150 + 100 * on) + "," + Math.round(124 + 90 * on) + "," + Math.round(70 + 60 * on) + ")");
+        body.addColorStop(0.55, "rgb(" + Math.round(90 + 70 * on) + "," + Math.round(68 + 52 * on) + "," + Math.round(28 + 22 * on) + ")");
+        body.addColorStop(1,   "rgb(34,24,10)");
+      } else {
+        body.addColorStop(0,   "rgb(" + Math.round(140 + 90 * on) + "," + Math.round(30 + 40 * on) + "," + Math.round(32 + 36 * on) + ")");
+        body.addColorStop(0.55, "rgb(" + Math.round(80 + 70 * on) + ",12,18)");
+        body.addColorStop(1,   "rgb(30,4,8)");
+      }
+      ctx.fillStyle = body;
       ctx.beginPath();
-      ctx.arc(R.x, R.y, R.r, 0, Math.PI * 2);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
+      /* 반사광 */
+      ctx.globalAlpha = 0.25 + 0.55 * on;
+      ctx.fillStyle = "#fff6e6";
+      ctx.beginPath();
+      ctx.ellipse(x - r * 0.38, y - r * 0.42, r * 0.22, r * 0.13, -0.6, 0, Math.PI * 2);
+      ctx.fill();
+      /* 켜진 뒤엔 주변 전구 빛을 받아 아주 살짝 번진다 */
+      if (litMix > 0.02) {
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = 0.18 * litMix;
+        var s = r * 2.4;
+        ctx.drawImage(R.gold ? spriteGold : spriteRed, x - s, y - s, s * 2, s * 2);
+        ctx.globalCompositeOperation = "source-over";
+      }
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
@@ -700,7 +769,7 @@
     lt.setTransform(dpr, 0, 0, dpr, 0, 0);
     /* 속은 깊은 그늘로 채워 빈 틈이 없게 */
     treePath(dk, 0.9); dk.fillStyle = "#06120c"; dk.fill();
-    treePath(lt, 0.9); lt.fillStyle = "#2a2c12"; lt.fill();
+    treePath(lt, 0.9); lt.fillStyle = "#0c1f14"; lt.fill();
     var rnd = seeded(20261220);
     var count = Math.round(geo.w * geo.h / 16);
     var span = geo.bottom - geo.top;
@@ -723,7 +792,8 @@
       var a = 0.5 + rnd() * 0.45;
       var lw = 0.8 + rnd() * 0.7;
       var dark = "rgba(" + Math.round(lerp(8, 34, s)) + "," + Math.round(lerp(20, 58, s)) + "," + Math.round(lerp(14, 38, s)) + "," + a + ")";
-      var lit  = "rgba(" + Math.round(lerp(70, 214, s)) + "," + Math.round(lerp(80, 200, s)) + "," + Math.round(lerp(26, 96, s)) + "," + a + ")";
+      /* 불 받은 잎도 노랗게 뜨지 않고 깊은 초록에 결만 살아나게 */
+      var lit  = "rgba(" + Math.round(lerp(20, 92, s)) + "," + Math.round(lerp(46, 128, s)) + "," + Math.round(lerp(30, 76, s)) + "," + a + ")";
       [[dk, dark], [lt, lit]].forEach(function (pair) {
         var c = pair[0];
         c.strokeStyle = pair[1];
@@ -752,7 +822,7 @@
   }
   function buildLights() {
     var rnd = seeded(1225);
-    var count = Math.round(geo.w * geo.h / 85);
+    var count = Math.round(geo.w * geo.h / 40);
     var span = geo.bottom - geo.top;
     lights = [];
     for (var i = 0; i < count; i++) {
@@ -763,13 +833,13 @@
       lights.push({
         x: geo.cx + u * halfWidth(t) * 0.97 + (rnd() - 0.5) * 3,
         y: geo.top + t * span + (rnd() - 0.5) * 4,
-        r: big ? 2 + rnd() * 1.2 : 0.6 + rnd() * 1.1,
+        r: big ? 1.3 + rnd() * 0.5 : 0.45 + rnd() * 0.7,
         base: 0.55 + rnd() * 0.45,
         phase: rnd() * Math.PI * 2,
         speed: 0.5 + rnd() * 1.9,
-        amber: rnd() < 0.14,
-        /* 켜기 전에도 빛나는 건 셋 중 하나. 나머지는 십자가를 누르면 켜진다 */
-        early: rnd() < 0.3,
+        amber: rnd() < 0.1,
+        /* 켜기 전에도 빛나는 건 넷 중 하나. 나머지는 십자가를 누르면 켜진다 */
+        early: rnd() < 0.25,
         delay: rnd()
       });
     }
@@ -780,9 +850,9 @@
     if (cross > 0.01) {
       /* 빛무리 */
       var halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, geo.w * 0.62);
-      halo.addColorStop(0,    "rgba(255,244,214," + (0.9 * cross) + ")");
-      halo.addColorStop(0.12, "rgba(255,214,140," + (0.5 * cross) + ")");
-      halo.addColorStop(0.4,  "rgba(255,186,96," + (0.14 * cross) + ")");
+      halo.addColorStop(0,    "rgba(255,244,214," + (0.7 * cross) + ")");
+      halo.addColorStop(0.1,  "rgba(255,220,150," + (0.3 * cross) + ")");
+      halo.addColorStop(0.36, "rgba(255,196,110," + (0.07 * cross) + ")");
       halo.addColorStop(1,    "rgba(255,186,96,0)");
       ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = halo;
@@ -796,7 +866,7 @@
         var a = (i / 16) * Math.PI * 2;
         var len = geo.w * (i % 2 ? 0.34 : 0.52);
         var g = ctx.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
-        g.addColorStop(0, "rgba(255,228,170," + (0.32 * cross) + ")");
+        g.addColorStop(0, "rgba(255,232,180," + (0.18 * cross) + ")");
         g.addColorStop(1, "rgba(255,228,170,0)");
         ctx.strokeStyle = g;
         ctx.lineWidth = i % 2 ? 1 : 1.6;
@@ -837,8 +907,8 @@
     /* 트리 뒤로 퍼지는 빛 */
     var midY = geo.top + (geo.bottom - geo.top) * 0.58;
     var bloom = ctx.createRadialGradient(geo.cx, midY, 0, geo.cx, midY, geo.w * 0.95);
-    bloom.addColorStop(0, "rgba(255,200,120," + (0.03 + 0.3 * litMix) + ")");
-    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.1 * litMix) + ")");
+    bloom.addColorStop(0, "rgba(255,214,150," + (0.02 + 0.1 * litMix) + ")");
+    bloom.addColorStop(0.55, "rgba(255,190,110," + (0.005 + 0.035 * litMix) + ")");
     bloom.addColorStop(1, "rgba(255,180,90,0)");
     ctx.fillStyle = bloom;
     ctx.fillRect(0, 0, geo.cw, geo.ch);
@@ -846,23 +916,23 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(foliageDark, 0, 0);
     /* 켜기 전엔 바늘잎이 거의 어둡고, 켜지면 노란빛 초록으로 살아난다 */
-    ctx.globalAlpha = 0.05 + 0.85 * Math.pow(litMix, 1.1);
+    ctx.globalAlpha = 0.08 + 0.6 * Math.pow(litMix, 1.1);
     ctx.drawImage(foliageLit, 0, 0);
     ctx.globalAlpha = 1;
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
     /* 전구 */
     ctx.globalCompositeOperation = "lighter";
     var tsec = now / 1000;
-    /* 빛은 더해지며 쌓이므로(lighter) 다 켜졌을 때 하얗게 타지 않게 번짐을 작게 둔다 */
-    var glow = 3.2 + 2.2 * litMix;
+    /* 빛은 더해지며 쌓이므로(lighter) 번짐을 아주 작게 — 알이 또렷해야 은은하다 */
+    var glow = 2.6 + 1.1 * litMix;
     for (var i = 0; i < lights.length; i++) {
       var L = lights[i];
       var tw = reduceMotion ? 0.85 : 0.62 + 0.38 * Math.sin(tsec * L.speed + L.phase);
       /* 켜기 전: 일부만 희미하게. 누르면 나머지가 저마다 조금씩 늦게 하나둘 켜진다 */
       var on = L.early
-        ? 0.42 + 0.58 * litMix
+        ? 0.45 + 0.55 * litMix
         : Math.max(0, Math.min(1, (litMix - L.delay * 0.55) / 0.45));
-      var a = on * L.base * tw * 0.68;
+      var a = on * L.base * tw * 0.9;
       if (a < 0.015) { continue; }
       ctx.globalAlpha = a > 1 ? 1 : a;
       var s = L.r * glow;
