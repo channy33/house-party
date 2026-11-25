@@ -326,6 +326,18 @@
     color: #a89f8a;
     margin-top: .15rem;
   }
+  /* 말씀: 켜기 전에는 어둠 속에 희미하게, 십자가 빛이 퍼지면 뒤따라 금빛으로 밝아진다 */
+  .scripture p, .scripture .ref {
+    transition: color 1.8s ease .45s, text-shadow 1.8s ease .45s, opacity 1.8s ease .45s;
+  }
+  .scripture { opacity: .62; transition: opacity 1.8s ease .45s; }
+  .is-lit .scripture { opacity: 1; }
+  .is-lit .scripture .ko {
+    color: #fff1cf;
+    text-shadow: 0 0 12px rgba(255, 200, 110, .55), 0 0 2px rgba(255, 220, 160, .5);
+  }
+  .is-lit .scripture .en { color: #e9d7ad; text-shadow: 0 0 10px rgba(255, 200, 110, .35); }
+  .is-lit .scripture .ref { color: #e8c27a; }
   /* 폰에서 '동작 줄이기'(아이폰)·'애니메이션 제거'(갤럭시)나 절전 모드를 켜 두면 이 조건이 걸린다.
      눈과 반짝임은 은은한 배경이라 그대로 두고, 옆으로 흔들리는 것만 멈춘다. */
   @media (prefers-reduced-motion: reduce) {
@@ -1322,7 +1334,7 @@
     });
     window.setTimeout(function () {
       invite.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 2600);
+    }, 3200); /* 밝아진 말씀을 잠깐 읽을 틈을 두고 내려간다 */
   }
   document.getElementById("cross").addEventListener("click", function () { light(); });
   window.__lightTree = light;
