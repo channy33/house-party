@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="d2f62d8433">
+<meta name="build" content="c432ca421f">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -492,6 +492,19 @@
   }
   .bgm__frame iframe, .bgm__frame > div { display: block; width: 100%; height: 100%; border: 0; }
   .bgm__hint { margin: .55rem 0 0; font-size: .74rem; color: var(--muted); }
+  /* 소리 없이 먼저 재생될 때 위쪽에 잠깐 뜨는 안내 */
+  .bgm-toast {
+    position: fixed; z-index: 40; left: 50%; top: max(10px, env(safe-area-inset-top, 0px));
+    transform: translateX(-50%);
+    appearance: none; cursor: pointer; white-space: nowrap;
+    font: inherit; font-size: .78rem; color: #ffe3a6;
+    background: rgba(10, 18, 14, .78); border: 1px solid rgba(232, 194, 122, .45);
+    border-radius: 999px; padding: .4rem .9rem;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    animation: toastIn .6s ease both;
+  }
+  .bgm-toast[hidden] { display: none; }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
   /* 오시는 길 사진 */
   .way-link {
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
@@ -1124,8 +1137,9 @@
   <section class="bgm gutter" aria-labelledby="bgm-title">
     <p class="bgm__title" id="bgm-title">♪ 배경 찬송 · 새찬송가 125장 천사들의 노래가</p>
     <div class="bgm__frame"><div id="bgm-player"></div></div>
-    <p class="bgm__hint">화면을 처음 누르면 흘러나와요. 오른쪽 '음악' 단추로 끄고 켤 수 있어요.</p>
+    <p class="bgm__hint">페이지를 열면 바로 흘러나와요. 오른쪽 '음악' 단추로 끄고 켤 수 있어요.</p>
   </section>
+  <button type="button" class="bgm-toast" id="bgm-toast" hidden>🔈 화면을 누르면 찬송 소리가 나요</button>
 </div>
 <!-- QR 공유 창 -->
 <div class="qr-sheet" id="qr-sheet" role="dialog" aria-modal="true" aria-labelledby="qr-title" hidden>
@@ -1969,12 +1983,38 @@
   var BGM_VIDEO = "vBTOV7rmou0";
   var musicBtn = document.getElementById("side-music");
   var musicLabel = document.getElementById("side-music-label");
-  var musicOn = false, musicMuted = false, wantPlay = false, yt = null, ytReady = false;
+  var musicOn = false, musicMuted = false, wantPlay = false, yt = null, ytReady = false, quietStart = false;
+  var bgmToast = document.getElementById("bgm-toast");
   try { musicMuted = window.localStorage.getItem("hp-music") === "off"; } catch (e) {}
+  /* 페이지를 열자마자 재생을 시도한다 (끈 적 있는 기기는 빼고) */
+  wantPlay = !musicMuted;
   function setMusicUI() {
-    musicBtn.setAttribute("aria-pressed", musicOn ? "true" : "false");
-    musicLabel.textContent = musicOn ? "음악 끄기" : "음악";
+    var audible = musicOn && !quietStart;
+    musicBtn.setAttribute("aria-pressed", audible ? "true" : "false");
+    musicLabel.textContent = audible ? "음악 끄기" : (quietStart ? "소리 켜기" : "음악");
   }
+  /* 소리 있는 자동 재생이 막히면(대부분의 폰), 소리 없이 먼저 재생해 두고
+     화면을 처음 누르는 순간 소리를 켠다 */
+  function checkAutoplay() {
+    if (!ytReady || !wantPlay) { return; }
+    if (yt.getPlayerState() !== 1) {
+      quietStart = true;
+      yt.mute();
+      yt.playVideo();
+      bgmToast.hidden = false;
+      setMusicUI();
+    }
+  }
+  function soundOn() {
+    if (!ytReady) { return; }
+    yt.unMute();
+    yt.setVolume(60);
+    if (yt.getPlayerState() !== 1) { yt.playVideo(); }
+    quietStart = false;
+    bgmToast.hidden = true;
+    setMusicUI();
+  }
+  bgmToast.addEventListener("click", function () { soundOn(); });
   window.onYouTubeIframeAPIReady = function () {
     yt = new window.YT.Player("bgm-player", {
       videoId: BGM_VIDEO,
@@ -1983,7 +2023,10 @@
         onReady: function () {
           ytReady = true;
           yt.setVolume(60);
-          if (wantPlay) { yt.playVideo(); }
+          if (wantPlay) {
+            yt.playVideo();
+            window.setTimeout(checkAutoplay, 1500);
+          }
         },
         onStateChange: function (e) {
           musicOn = e.data === 1 || e.data === 3; /* 재생 중 · 불러오는 중 */
@@ -2000,16 +2043,18 @@
   function startMusic(fromButton) {
     if (musicMuted && !fromButton) { return; }
     wantPlay = true;
-    if (ytReady) { yt.playVideo(); }
+    if (ytReady) { soundOn(); }
   }
   function stopMusic() {
     wantPlay = false;
+    quietStart = false;
+    bgmToast.hidden = true;
     if (ytReady) { yt.pauseVideo(); }
     musicOn = false;
     setMusicUI();
   }
   musicBtn.addEventListener("click", function () {
-    if (musicOn) {
+    if (musicOn && !quietStart) {
       stopMusic();
       musicMuted = true;
       try { window.localStorage.setItem("hp-music", "off"); } catch (e) {}
@@ -2021,7 +2066,7 @@
   });
   /* 처음부터 나오게: 화면 어디든 처음 누르는 순간 재생 (폰은 그 전엔 소리를 막는다) */
   function firstTouch(event) {
-    if (event.target && event.target.closest && event.target.closest("#side-music")) { return; }
+    if (event.target && event.target.closest && event.target.closest("#side-music, #bgm-toast")) { return; }
     ["pointerup", "touchend", "keydown", "click"].forEach(function (type) {
       document.removeEventListener(type, firstTouch, true);
     });
