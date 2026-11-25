@@ -30,7 +30,7 @@
 </head>
 <body>
 <style>
-  /* 크림색 종이 한 장 — 성냥불을 초로 옮기면 그 아래로 초대장이 열린다 */
+  /* 눈 내리는 어두운 밤 → 십자가에 불이 켜지면 따뜻하게 환해지고 초대장이 열린다 */
   :root {
     color-scheme: light;
     --paper:      #f4efe4;
@@ -42,7 +42,7 @@
     --olive-soft: #6f8468;
     --line:       rgba(68, 96, 63, .18);
     --ember:      #e26a35;
-    --flame:      #ffae3a;
+    --night:      #0a1430;
     --display: "Nanum Myeongjo", "Batang", "Apple SD Gothic Neo", serif;
     --body:    "Gowun Dodum", "Malgun Gothic", system-ui, sans-serif;
   }
@@ -51,15 +51,13 @@
     margin: 0;
     font-family: var(--body);
     color: var(--ink);
-    background: var(--paper);
+    background: var(--night);
     line-height: 1.7;
+    transition: background 2s ease;
     -webkit-font-smoothing: antialiased;
   }
-  .sheet {
-    max-width: 30rem;
-    margin-inline: auto;
-    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 55%, var(--paper) 100%);
-  }
+  body.lit { background: var(--paper); }
+  .sheet { max-width: 30rem; margin-inline: auto; }
   .gutter {
     padding-left:  max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -68,66 +66,82 @@
   .stage {
     position: relative;
     overflow: hidden;
-    min-height: min(100svh, 46rem);
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-block: 2rem 1.4rem;
   }
-  .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  .confetti i {
+  /* 하늘 두 장을 겹쳐 두고 밝은 쪽을 서서히 띄운다 */
+  .sky { position: absolute; inset: 0; pointer-events: none; }
+  .sky--night {
+    background:
+      radial-gradient(70% 45% at 50% 12%, #1b2b56 0%, rgba(27,43,86,0) 70%),
+      linear-gradient(180deg, #0a1430 0%, #0d1a3a 55%, #111f44 100%);
+  }
+  .sky--warm {
+    opacity: 0;
+    transition: opacity 2s ease;
+    background:
+      radial-gradient(58% 38% at 50% 13%, #ffe4b0 0%, rgba(255,228,176,0) 72%),
+      linear-gradient(180deg, #f7e7c8 0%, #f3e2c4 48%, #efdcbb 100%);
+  }
+  .is-lit .sky--warm { opacity: 1; }
+  /* 눈 */
+  .snow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .snow i {
     position: absolute;
     display: block;
     top: var(--t, 10%);
-    width: .34rem;
-    height: .9rem;
-    border-radius: .3rem;
-    background: var(--c);
-    opacity: .85;
-    animation-name: fall, tumble;
+    width: var(--s, 5px);
+    height: var(--s, 5px);
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: var(--o, .75);
+    animation-name: fall, drift;
     animation-timing-function: linear, ease-in-out;
     animation-iteration-count: infinite, infinite;
   }
+  .is-lit .snow i { box-shadow: 0 0 7px rgba(255, 196, 112, .9); }
   @keyframes fall {
-    from { top: -12%; }
-    to   { top: 112%; }
+    from { top: -8%; }
+    to   { top: 108%; }
   }
-  @keyframes tumble {
-    0%   { transform: translateX(0)      rotate(0deg) }
-    25%  { transform: translateX(.55rem) rotate(190deg) }
-    50%  { transform: translateX(-.4rem) rotate(360deg) }
-    75%  { transform: translateX(.45rem) rotate(545deg) }
-    100% { transform: translateX(0)      rotate(720deg) }
+  @keyframes drift {
+    0%, 100% { transform: translateX(0) }
+    50%      { transform: translateX(15px) }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .confetti i { animation: none; }
-  }
+  /* 글 */
   .badge {
     position: relative;
     font-family: var(--display);
     font-size: 1.05rem;
     letter-spacing: .1em;
-    color: var(--olive-soft);
-    border: 1px solid var(--line);
+    color: #b9c6e8;
+    border: 1px solid rgba(185, 198, 232, .38);
     border-radius: 50%;
     padding: .4rem 1.5rem;
     margin: 0;
+    transition: color 2s ease, border-color 2s ease;
   }
+  .is-lit .badge { color: var(--olive-soft); border-color: var(--line); }
   .title {
     position: relative;
     font-family: var(--display);
     font-weight: 700;
-    color: var(--olive);
+    color: #eef3ff;
     font-size: clamp(1.45rem, 6.6vw, 1.95rem);
     line-height: 1.5;
     letter-spacing: -.01em;
     text-align: center;
     text-wrap: balance;
-    margin: 1.15rem 0 0;
+    margin: 1rem 0 0;
+    transition: color 2s ease, text-shadow 2s ease;
   }
+  .is-lit .title { color: var(--olive); }
   .scripture {
     position: relative;
-    margin: 1rem 0 0;
+    margin: .9rem 0 0;
     max-width: 23rem;
     display: grid;
     gap: .35rem;
@@ -138,85 +152,102 @@
     font-family: var(--display);
     font-size: .82rem;
     line-height: 1.8;
-    color: var(--olive-soft);
+    color: #9fb0d6;
     word-break: keep-all;
+    transition: color 2s ease;
   }
-  .scripture .ko { color: var(--olive); }
-  .scripture .ref {
-    font-size: .78rem;
-    letter-spacing: .1em;
-    color: var(--ink-soft);
-  }
+  .scripture .ko { color: #d5def5; }
+  .scripture .ref { font-size: .78rem; letter-spacing: .1em; color: #8c9cc2; }
   .scripture .en {
     font-size: .67rem;
     line-height: 1.75;
     letter-spacing: .012em;
-    color: #a39e8c;
+    color: #7d8cb0;
     margin-top: .1rem;
   }
-  .cake-wrap {
+  .is-lit .scripture .ko  { color: var(--olive); }
+  .is-lit .scripture .ref { color: var(--ink-soft); }
+  .is-lit .scripture .en  { color: #a39e8c; }
+  /* ───────── 트리 ───────── */
+  .tree-wrap {
     position: relative;
     width: min(15rem, 62%);
     margin-top: auto;
   }
-  .cake { display: block; width: 100%; height: auto; }
-  .flame-group { opacity: 0; transition: opacity .9s ease .15s; }
-  .is-lit .flame-group { opacity: 1; }
-  .flame-body { transform-origin: 200px 46px; }
-  .is-lit .flame-body { animation: flicker 2.4s ease-in-out .6s infinite; }
-  @keyframes flicker {
-    0%, 100% { transform: scale(1) rotate(0deg) }
-    50%      { transform: scale(1.07) rotate(-2.5deg) }
+  .tree { display: block; width: 100%; height: auto; overflow: visible; }
+  .tree-body  { fill: #12291c; transition: fill 2s ease; }
+  .tree-body2 { fill: #0d2016; transition: fill 2s ease; }
+  .tree-trunk { fill: #2a1f16; transition: fill 2s ease; }
+  .tree-snow  { fill: #c9d6f0; transition: fill 2s ease; }
+  .is-lit .tree-body  { fill: #27512f; }
+  .is-lit .tree-body2 { fill: #1d4126; }
+  .is-lit .tree-trunk { fill: #4a3626; }
+  .is-lit .tree-snow  { fill: #fff4de; }
+  .bulb { opacity: 0; transition: opacity 1.4s ease .5s; }
+  .is-lit .bulb { opacity: 1; animation: twinkle 3.4s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+  .cross-mark { fill: #59678c; transition: fill 1.1s ease; }
+  .is-lit .cross-mark {
+    fill: #ffe3a0;
+    filter: drop-shadow(0 0 4px #fff1c9) drop-shadow(0 0 12px rgba(255, 196, 106, .9));
   }
-  /* ───────── 성냥 ───────── */
-  .lighter {
-    position: relative;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .4rem;
-    width: 100%;
+  .cross-halo { opacity: 0; transition: opacity 1.6s ease; }
+  .is-lit .cross-halo { opacity: 1; }
+  /* 누르라는 신호 — 켜지기 전에만 숨 쉬듯 */
+  .cross-ring {
+    fill: none;
+    stroke: #8fa3d6;
+    stroke-width: 2;
+    opacity: .5;
+    animation: breathe 2.6s ease-in-out infinite;
   }
-  .match {
-    appearance: none;
+  .is-lit .cross-ring { opacity: 0; animation: none; }
+  @keyframes breathe {
+    0%, 100% { opacity: .18; transform: scale(1) }
+    50%      { opacity: .55; transform: scale(1.1) }
+  }
+  .cross-btn {
+    position: absolute;
+    left: 50%;
+    top: -2%;
+    transform: translateX(-50%);
+    width: 42%;
+    min-width: 62px;
+    aspect-ratio: 1;
+    padding: 0;
     border: 0;
+    border-radius: 50%;
     background: none;
-    padding: .35rem;
-    cursor: grab;
-    touch-action: none;
-    width: 3rem;
-    transition: transform .45s cubic-bezier(.2,.8,.3,1), opacity .5s ease;
+    cursor: pointer;
   }
-  .match svg { display: block; width: 100%; height: auto; }
-  .match.dragging { cursor: grabbing; transition: none; }
-  .match.near .match-flame { filter: brightness(1.25); }
-  .match.spent { opacity: 0; pointer-events: none; }
-  .match-flame { transform-origin: 20px 26px; animation: flicker 1.8s ease-in-out infinite; }
+  .cross-btn:focus-visible { outline: 2px solid #ffd98a; outline-offset: 2px; }
+  .is-lit .cross-btn { pointer-events: none; }
   .hint {
+    position: relative;
+    margin: 1rem 0 0;
     font-size: .95rem;
-    color: var(--ink-soft);
-    margin: 0;
+    color: #a8b6da;
     text-align: center;
-    transition: opacity .4s ease;
+    transition: color 2s ease, opacity .5s ease;
   }
   .is-lit .hint { opacity: 0; }
   .skip {
+    position: relative;
     appearance: none;
     border: 0;
     background: none;
     font: inherit;
     font-size: .82rem;
-    color: var(--ink-soft);
+    color: #7d8cb0;
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
-    padding: .25rem .5rem;
+    padding: .3rem .5rem;
+    margin-top: .3rem;
   }
   .is-lit .skip { display: none; }
   @media (prefers-reduced-motion: reduce) {
-    .match-flame, .is-lit .flame-body { animation: none !important; }
-    .match { transition: none; }
+    .snow i, .cross-ring, .is-lit .bulb { animation: none !important; }
   }
   /* ───────── 초대장 ───────── */
   .invite {
@@ -227,7 +258,6 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    border-top: 1px solid var(--line);
   }
   .invite.in { opacity: 1; transform: none; }
   .intro {
@@ -265,7 +295,6 @@
   .fact strong { display: block; font-size: 1.05rem; font-weight: 400; }
   .fact small { display: block; color: var(--ink-soft); font-size: .86rem; margin-top: .1rem; }
   .fact a { color: var(--olive); text-underline-offset: 3px; }
-  /* 참석 응답 */
   .form { display: grid; gap: 1.1rem; }
   .field { display: grid; gap: .4rem; }
   .field > label, .legend { font-size: .85rem; color: var(--ink-soft); }
@@ -328,7 +357,6 @@
   }
   .note { font-size: .85rem; color: var(--ink-soft); margin: 0; }
   .note--warn { color: var(--ember); }
-  /* 명단 */
   .tally { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .9rem; }
   .pill {
     font-size: .85rem;
@@ -370,29 +398,37 @@
 <div class="sheet">
   <!-- ───────── 첫 화면 ───────── -->
   <section class="stage gutter" id="stage" aria-label="초대장 첫 화면">
-    <div class="confetti" aria-hidden="true">
-      <i style="left:6%;--t:8%;--c:#f2a2b8;animation-duration:12s,5.1s;animation-delay:-1.2s,-0.4s"></i>
-      <i style="left:14%;--t:34%;--c:#f5d06b;animation-duration:10.5s,4.2s;animation-delay:-5.8s,-2.1s"></i>
-      <i style="left:21%;--t:62%;--c:#9fc3e8;animation-duration:13s,6s;animation-delay:-9.1s,-3.3s"></i>
-      <i style="left:27%;--t:18%;--c:#c3a6e0;animation-duration:11.2s,4.8s;animation-delay:-3.4s,-1.7s"></i>
-      <i style="left:34%;--t:77%;--c:#f0a05a;animation-duration:9.8s,3.9s;animation-delay:-7.5s,-0.9s"></i>
-      <i style="left:41%;--t:45%;--c:#9bc48a;animation-duration:12.6s,5.5s;animation-delay:-2.2s,-2.8s"></i>
-      <i style="left:48%;--t:12%;--c:#f2a2b8;animation-duration:10.1s,4.4s;animation-delay:-6.9s,-1.1s"></i>
-      <i style="left:55%;--t:68%;--c:#f5d06b;animation-duration:13.4s,6.2s;animation-delay:-4.1s,-3.9s"></i>
-      <i style="left:61%;--t:28%;--c:#9fc3e8;animation-duration:11.7s,5s;animation-delay:-8.3s,-0.5s"></i>
-      <i style="left:68%;--t:84%;--c:#c3a6e0;animation-duration:9.4s,4.1s;animation-delay:-1.6s,-2.4s"></i>
-      <i style="left:74%;--t:52%;--c:#f0a05a;animation-duration:12.9s,5.8s;animation-delay:-5.2s,-1.9s"></i>
-      <i style="left:81%;--t:22%;--c:#9bc48a;animation-duration:10.8s,4.6s;animation-delay:-7.8s,-3.1s"></i>
-      <i style="left:88%;--t:71%;--c:#f2a2b8;animation-duration:11.9s,5.3s;animation-delay:-3.7s,-0.8s"></i>
-      <i style="left:94%;--t:39%;--c:#f5d06b;animation-duration:13.8s,6.4s;animation-delay:-10.2s,-2.6s"></i>
-      <i style="left:10%;--t:88%;--c:#9fc3e8;animation-duration:9.6s,4s;animation-delay:-4.6s,-1.5s"></i>
-      <i style="left:30%;--t:5%;--c:#c3a6e0;animation-duration:12.2s,5.6s;animation-delay:-8.8s,-3.5s"></i>
-      <i style="left:45%;--t:92%;--c:#f0a05a;animation-duration:11.1s,4.9s;animation-delay:-2.9s,-2.2s"></i>
-      <i style="left:58%;--t:58%;--c:#9bc48a;animation-duration:13.1s,6.1s;animation-delay:-6.4s,-0.3s"></i>
-      <i style="left:71%;--t:8%;--c:#f2a2b8;animation-duration:10.3s,4.3s;animation-delay:-9.7s,-1.8s"></i>
-      <i style="left:84%;--t:48%;--c:#f5d06b;animation-duration:12.4s,5.7s;animation-delay:-5.5s,-3.7s"></i>
-      <i style="left:17%;--t:74%;--c:#9fc3e8;animation-duration:11.5s,5.2s;animation-delay:-3.1s,-1.3s"></i>
-      <i style="left:64%;--t:33%;--c:#c3a6e0;animation-duration:9.9s,4.5s;animation-delay:-7.2s,-2.9s"></i>
+    <div class="sky sky--night" aria-hidden="true"></div>
+    <div class="sky sky--warm" aria-hidden="true"></div>
+    <div class="snow" aria-hidden="true">
+      <i style="left:4%;--t:12%;--s:5px;--o:.8;animation-duration:15s,6.1s;animation-delay:-2.1s,-0.4s"></i>
+      <i style="left:11%;--t:48%;--s:3px;--o:.6;animation-duration:19s,7.2s;animation-delay:-8.4s,-2.1s"></i>
+      <i style="left:17%;--t:76%;--s:6px;--o:.85;animation-duration:13s,5.4s;animation-delay:-4.6s,-3.3s"></i>
+      <i style="left:23%;--t:22%;--s:4px;--o:.7;animation-duration:17s,6.8s;animation-delay:-11.2s,-1.7s"></i>
+      <i style="left:29%;--t:62%;--s:3px;--o:.55;animation-duration:21s,8.1s;animation-delay:-6.3s,-0.9s"></i>
+      <i style="left:35%;--t:8%;--s:5px;--o:.8;animation-duration:14s,5.9s;animation-delay:-9.8s,-2.8s"></i>
+      <i style="left:41%;--t:88%;--s:4px;--o:.7;animation-duration:18s,7.5s;animation-delay:-3.2s,-1.1s"></i>
+      <i style="left:47%;--t:34%;--s:6px;--o:.9;animation-duration:12s,5.1s;animation-delay:-7.7s,-3.9s"></i>
+      <i style="left:53%;--t:70%;--s:3px;--o:.6;animation-duration:20s,7.8s;animation-delay:-13.4s,-0.5s"></i>
+      <i style="left:59%;--t:16%;--s:5px;--o:.8;animation-duration:16s,6.4s;animation-delay:-5.1s,-2.4s"></i>
+      <i style="left:65%;--t:54%;--s:4px;--o:.7;animation-duration:13.5s,5.7s;animation-delay:-10.6s,-1.9s"></i>
+      <i style="left:71%;--t:92%;--s:3px;--o:.55;animation-duration:22s,8.4s;animation-delay:-2.8s,-3.1s"></i>
+      <i style="left:77%;--t:28%;--s:6px;--o:.85;animation-duration:14.5s,6s;animation-delay:-12.1s,-0.8s"></i>
+      <i style="left:83%;--t:66%;--s:4px;--o:.7;animation-duration:18.5s,7.1s;animation-delay:-6.9s,-2.6s"></i>
+      <i style="left:89%;--t:4%;--s:5px;--o:.8;animation-duration:15.5s,6.6s;animation-delay:-1.4s,-1.5s"></i>
+      <i style="left:95%;--t:44%;--s:3px;--o:.6;animation-duration:19.5s,7.9s;animation-delay:-14.2s,-3.5s"></i>
+      <i style="left:8%;--t:84%;--s:4px;--o:.75;animation-duration:16.5s,6.2s;animation-delay:-5.7s,-2.2s"></i>
+      <i style="left:20%;--t:38%;--s:5px;--o:.8;animation-duration:12.5s,5.3s;animation-delay:-9.1s,-0.3s"></i>
+      <i style="left:32%;--t:96%;--s:3px;--o:.55;animation-duration:23s,8.7s;animation-delay:-3.9s,-1.8s"></i>
+      <i style="left:44%;--t:58%;--s:6px;--o:.85;animation-duration:13.8s,5.6s;animation-delay:-11.8s,-3.7s"></i>
+      <i style="left:56%;--t:2%;--s:4px;--o:.7;animation-duration:17.5s,7.4s;animation-delay:-7.2s,-1.3s"></i>
+      <i style="left:68%;--t:80%;--s:5px;--o:.8;animation-duration:15.2s,6.9s;animation-delay:-13.1s,-2.9s"></i>
+      <i style="left:80%;--t:50%;--s:3px;--o:.6;animation-duration:20.5s,8.2s;animation-delay:-4.3s,-0.7s"></i>
+      <i style="left:92%;--t:26%;--s:5px;--o:.8;animation-duration:14.2s,5.8s;animation-delay:-10.1s,-3.4s"></i>
+      <i style="left:2%;--t:68%;--s:4px;--o:.7;animation-duration:18.2s,7.6s;animation-delay:-6.1s,-2.0s"></i>
+      <i style="left:38%;--t:42%;--s:3px;--o:.6;animation-duration:21.5s,8.9s;animation-delay:-15.3s,-1.2s"></i>
+      <i style="left:62%;--t:18%;--s:6px;--o:.9;animation-duration:12.8s,5.2s;animation-delay:-8.7s,-3.8s"></i>
+      <i style="left:86%;--t:74%;--s:4px;--o:.75;animation-duration:16.8s,7s;animation-delay:-2.4s,-0.6s"></i>
     </div>
     <p class="badge">12.20</p>
     <h1 class="title">예수님 2026번째<br>생일에 초대합니다</h1>
@@ -401,107 +437,88 @@
       <p class="ref">이사야 9장 6절</p>
       <p class="en">For a child is born to us, a son is given to us. The government will rest on his shoulders. And he will be called: Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace.</p>
     </blockquote>
-    <div class="cake-wrap">
-      <svg class="cake" viewBox="0 -70 400 430" role="img" aria-label="초가 꽂힌 생크림 케이크">
+    <div class="tree-wrap">
+      <svg class="tree" viewBox="0 0 300 390" role="img" aria-label="십자가를 얹은 성탄 트리">
         <defs>
-          <radialGradient id="halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#ffc46a" stop-opacity=".55"/>
+          <radialGradient id="crossGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#fff1c9" stop-opacity="1"/>
+            <stop offset="22%"  stop-color="#ffd98a" stop-opacity=".7"/>
+            <stop offset="55%"  stop-color="#ffc46a" stop-opacity=".25"/>
             <stop offset="100%" stop-color="#ffc46a" stop-opacity="0"/>
           </radialGradient>
-          <linearGradient id="side" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stop-color="#efe6d5"/>
-            <stop offset="28%"  stop-color="#fffdf7"/>
-            <stop offset="72%"  stop-color="#fffdf7"/>
-            <stop offset="100%" stop-color="#ece2cf"/>
-          </linearGradient>
-          <clipPath id="candle-clip">
-            <rect x="188" y="62" width="24" height="140" rx="12"/>
-          </clipPath>
-          <g id="rosette">
-            <ellipse cx="0" cy="0"   rx="30" ry="26" fill="#f2e9d8"/>
-            <ellipse cx="0" cy="-5"  rx="26" ry="22" fill="#fdf8ed"/>
-            <ellipse cx="0" cy="-13" rx="19" ry="16" fill="#fffdf6"/>
-            <ellipse cx="0" cy="-21" rx="11" ry="9"  fill="#ffffff"/>
-            <path d="M0 -36 q5 9 0 13 q-5 -4 0 -13 z" fill="#ffffff"/>
-            <path d="M-19 6 q4 -16 2 -26 M0 10 q0 -18 0 -29 M19 6 q-4 -16 -2 -26"
-                  fill="none" stroke="#ebe0cb" stroke-width="2" stroke-linecap="round" opacity=".75"/>
-          </g>
+          <radialGradient id="bulbGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#ffdb95" stop-opacity=".75"/>
+            <stop offset="100%" stop-color="#ffdb95" stop-opacity="0"/>
+          </radialGradient>
         </defs>
-        <!-- 케이크 옆면 -->
-        <ellipse cx="200" cy="308" rx="160" ry="42" fill="#f0e7d6"/>
-        <rect x="40" y="200" width="320" height="108" fill="url(#side)"/>
-        <!-- 흘러내린 생크림 -->
-        <path d="M40 200 v30 q20 34 40 0 q20 22 40 0 q20 40 40 0 q20 26 40 0 q20 36 40 0 q20 20 40 0 q20 32 40 0 q20 28 40 0 v-30 z" fill="#fffdf7"/>
-        <!-- 윗면 -->
-        <ellipse cx="200" cy="200" rx="160" ry="46" fill="#fdf8ed"/>
-        <!-- 스프링클 -->
-        <g>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f2a2b8" transform="translate(152,198) rotate(-22)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f5d06b" transform="translate(176,212) rotate(38)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#9bc48a" transform="translate(226,194) rotate(10)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#9fc3e8" transform="translate(249,208) rotate(-42)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#c3a6e0" transform="translate(200,217) rotate(72)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f0a05a" transform="translate(170,188) rotate(52)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f2a2b8" transform="translate(236,218) rotate(-16)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f5d06b" transform="translate(134,206) rotate(26)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#9bc48a" transform="translate(264,198) rotate(60)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#9fc3e8" transform="translate(206,187) rotate(-56)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#c3a6e0" transform="translate(188,224) rotate(14)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f0a05a" transform="translate(246,186) rotate(44)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f2a2b8" transform="translate(96,252) rotate(-30)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#9bc48a" transform="translate(300,262) rotate(20)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#f5d06b" transform="translate(142,276) rotate(64)"/>
-          <rect x="-5" y="-1.6" width="10" height="3.2" rx="1.6" fill="#c3a6e0" transform="translate(258,284) rotate(-12)"/>
+        <!-- 바닥에 쌓인 눈 -->
+        <ellipse class="tree-snow" cx="150" cy="350" rx="124" ry="15"/>
+        <!-- 기둥 -->
+        <rect class="tree-trunk" x="138" y="300" width="24" height="46" rx="4"/>
+        <!-- 가지 네 단 -->
+        <path class="tree-body"  d="M150 66 L194 134 L179 128 L165 138 L150 130 L135 138 L121 128 L106 134 Z"/>
+        <path class="tree-body2" d="M150 104 L216 190 L194 183 L172 195 L150 186 L128 195 L106 183 L84 190 Z"/>
+        <path class="tree-body"  d="M150 148 L238 252 L209 244 L179 257 L150 248 L121 257 L91 244 L62 252 Z"/>
+        <path class="tree-body2" d="M150 196 L260 316 L223 307 L186 322 L150 312 L114 322 L77 307 L40 316 Z"/>
+        <!-- 가지에 앉은 눈 -->
+        <g class="tree-snow">
+          <ellipse cx="194" cy="134" rx="11" ry="4.5"/>
+          <ellipse cx="179" cy="128" rx="10" ry="4"/>
+          <ellipse cx="165" cy="138" rx="10" ry="4"/>
+          <ellipse cx="150" cy="130" rx="10" ry="4"/>
+          <ellipse cx="135" cy="138" rx="10" ry="4"/>
+          <ellipse cx="121" cy="128" rx="10" ry="4"/>
+          <ellipse cx="106" cy="134" rx="11" ry="4.5"/>
+          <ellipse cx="216" cy="190" rx="12" ry="4.5"/>
+          <ellipse cx="194" cy="183" rx="11" ry="4"/>
+          <ellipse cx="172" cy="195" rx="11" ry="4"/>
+          <ellipse cx="150" cy="186" rx="11" ry="4"/>
+          <ellipse cx="128" cy="195" rx="11" ry="4"/>
+          <ellipse cx="106" cy="183" rx="11" ry="4"/>
+          <ellipse cx="84"  cy="190" rx="12" ry="4.5"/>
+          <ellipse cx="238" cy="252" rx="13" ry="5"/>
+          <ellipse cx="209" cy="244" rx="12" ry="4.5"/>
+          <ellipse cx="179" cy="257" rx="12" ry="4.5"/>
+          <ellipse cx="150" cy="248" rx="12" ry="4.5"/>
+          <ellipse cx="121" cy="257" rx="12" ry="4.5"/>
+          <ellipse cx="91"  cy="244" rx="12" ry="4.5"/>
+          <ellipse cx="62"  cy="252" rx="13" ry="5"/>
+          <ellipse cx="260" cy="316" rx="14" ry="5"/>
+          <ellipse cx="223" cy="307" rx="13" ry="5"/>
+          <ellipse cx="186" cy="322" rx="13" ry="5"/>
+          <ellipse cx="150" cy="312" rx="13" ry="5"/>
+          <ellipse cx="114" cy="322" rx="13" ry="5"/>
+          <ellipse cx="77"  cy="307" rx="13" ry="5"/>
+          <ellipse cx="40"  cy="316" rx="14" ry="5"/>
         </g>
-        <!-- 뒤쪽 크림 장식 -->
-        <use href="#rosette" x="200" y="144"/>
-        <use href="#rosette" x="112" y="155"/>
-        <use href="#rosette" x="288" y="155"/>
-        <use href="#rosette" x="69"  y="182"/>
-        <use href="#rosette" x="331" y="182"/>
-        <!-- 초 -->
-        <rect x="188" y="62" width="24" height="140" rx="12" fill="#fffdf7"/>
-        <g clip-path="url(#candle-clip)">
-          <path d="M174 86 l30 -30 h13 l-30 30 z"  fill="#e26a35"/>
-          <path d="M174 112 l30 -30 h13 l-30 30 z" fill="#e26a35"/>
-          <path d="M174 138 l30 -30 h13 l-30 30 z" fill="#e26a35"/>
-          <path d="M174 164 l30 -30 h13 l-30 30 z" fill="#e26a35"/>
-          <path d="M174 190 l30 -30 h13 l-30 30 z" fill="#e26a35"/>
-          <path d="M174 216 l30 -30 h13 l-30 30 z" fill="#e26a35"/>
+        <!-- 트리 전구 -->
+        <g class="bulb" style="animation-delay:0s">
+          <circle cx="150" cy="100" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="100" r="4" fill="#ffd98a"/>
+          <circle cx="112" cy="168" r="11" fill="url(#bulbGlow)"/><circle cx="112" cy="168" r="4" fill="#ffb3a0"/>
+          <circle cx="196" cy="222" r="11" fill="url(#bulbGlow)"/><circle cx="196" cy="222" r="4" fill="#fff0c2"/>
+          <circle cx="104" cy="278" r="11" fill="url(#bulbGlow)"/><circle cx="104" cy="278" r="4" fill="#ffd98a"/>
         </g>
-        <rect x="188" y="62" width="24" height="140" rx="12" fill="none" stroke="#efe6d5" stroke-width="2"/>
-        <path d="M200 62 v-11" stroke="#7a6a52" stroke-width="3" stroke-linecap="round"/>
-        <circle id="wick-target" cx="200" cy="48" r="10" fill="transparent"/>
-        <!-- 불꽃 -->
-        <g class="flame-group">
-          <circle cx="200" cy="18" r="84" fill="url(#halo)"/>
-          <g class="flame-body">
-            <path d="M200 -16 C219 16 216 34 200 50 C184 34 181 16 200 -16 Z" fill="#ffae3a"/>
-            <path d="M200 8 C208 24 207 36 200 46 C193 36 192 24 200 8 Z" fill="#fff3cd"/>
-          </g>
+        <g class="bulb" style="animation-delay:1.1s">
+          <circle cx="186" cy="166" r="11" fill="url(#bulbGlow)"/><circle cx="186" cy="166" r="4" fill="#fff0c2"/>
+          <circle cx="150" cy="214" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="214" r="4" fill="#ffc96b"/>
+          <circle cx="206" cy="284" r="11" fill="url(#bulbGlow)"/><circle cx="206" cy="284" r="4" fill="#ffb3a0"/>
+          <circle cx="134" cy="238" r="11" fill="url(#bulbGlow)"/><circle cx="134" cy="238" r="4" fill="#ffd98a"/>
         </g>
-        <!-- 앞쪽 크림 장식 -->
-        <use href="#rosette" x="93"  y="211"/>
-        <use href="#rosette" x="307" y="211"/>
-        <use href="#rosette" x="172" y="227"/>
-        <use href="#rosette" x="228" y="227"/>
+        <g class="bulb" style="animation-delay:2.2s">
+          <circle cx="150" cy="156" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="156" r="4" fill="#ffb3a0"/>
+          <circle cx="118" cy="214" r="11" fill="url(#bulbGlow)"/><circle cx="118" cy="214" r="4" fill="#fff0c2"/>
+          <circle cx="166" cy="292" r="11" fill="url(#bulbGlow)"/><circle cx="166" cy="292" r="4" fill="#ffd98a"/>
+          <circle cx="226" cy="268" r="11" fill="url(#bulbGlow)"/><circle cx="226" cy="268" r="4" fill="#ffc96b"/>
+        </g>
+        <!-- 십자가 -->
+        <circle class="cross-halo" cx="150" cy="38" r="96" fill="url(#crossGlow)"/>
+        <circle class="cross-ring" cx="150" cy="38" r="34" style="transform-origin:150px 38px"/>
+        <path class="cross-mark" d="M143 8 h14 v16 h14 v14 h-14 v28 h-14 v-28 h-14 v-14 h14 z"/>
       </svg>
+      <button class="cross-btn" id="cross" type="button" aria-label="십자가에 불 켜기"></button>
     </div>
-    <div class="lighter">
-      <button class="match" id="match" type="button" aria-label="성냥불을 초로 옮기기">
-        <svg viewBox="0 0 40 120" aria-hidden="true">
-          <g class="match-flame">
-            <path d="M20 2 C29 16 27 26 20 34 C13 26 11 16 20 2 Z" fill="#ffae3a"/>
-            <path d="M20 14 C24 22 23 29 20 33 C17 29 16 22 20 14 Z" fill="#fff3cd"/>
-          </g>
-          <ellipse cx="20" cy="40" rx="7.5" ry="9" fill="#8e3b21"/>
-          <rect x="17" y="46" width="6" height="70" rx="3" fill="#d9b483"/>
-          <rect x="17" y="46" width="2.2" height="70" rx="1.1" fill="#c49c68" opacity=".55"/>
-        </svg>
-      </button>
-      <p class="hint" id="hint">성냥불을 초로 옮겨 주세요</p>
-      <button class="skip" id="skip" type="button">초대장 바로 보기</button>
-    </div>
+    <p class="hint" id="hint">십자가를 눌러 불을 켜 주세요</p>
+    <button class="skip" id="skip" type="button">초대장 바로 보기</button>
   </section>
   <!-- ───────── 초대장 ───────── -->
   <section class="invite gutter" id="invite" hidden aria-label="초대장">
@@ -583,84 +600,29 @@
 <script>
 (function () {
   "use strict";
-  /* ───────── 성냥불 옮기기 ───────── */
-  var stage   = document.getElementById("stage");
-  var matchEl = document.getElementById("match");
-  var wick    = document.getElementById("wick-target");
-  var hint    = document.getElementById("hint");
-  var skip    = document.getElementById("skip");
-  var invite  = document.getElementById("invite");
-  var dragging = false, moved = false, lit = false;
-  var startX = 0, startY = 0;
-  function flamePoint() {
-    var r = matchEl.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height * 0.12 };
-  }
-  function wickPoint() {
-    var r = wick.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  }
-  function isNear() {
-    var a = flamePoint(), b = wickPoint();
-    var dx = a.x - b.x, dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy) < 72;
-  }
-  matchEl.addEventListener("pointerdown", function (event) {
-    if (lit) { return; }
-    dragging = true;
-    moved = false;
-    startX = event.clientX;
-    startY = event.clientY;
-    matchEl.classList.add("dragging");
-    try { matchEl.setPointerCapture(event.pointerId); } catch (e) {}
-  });
-  matchEl.addEventListener("pointermove", function (event) {
-    if (!dragging) { return; }
-    var dx = event.clientX - startX;
-    var dy = event.clientY - startY;
-    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) { moved = true; }
-    matchEl.style.transform = "translate(" + dx + "px," + dy + "px) rotate(-14deg)";
-    if (isNear()) { matchEl.classList.add("near"); }
-    else { matchEl.classList.remove("near"); }
-  });
-  function endDrag() {
-    if (!dragging) { return; }
-    dragging = false;
-    matchEl.classList.remove("dragging", "near");
-    if (isNear()) { light(); }
-    else { matchEl.style.transform = ""; }
-  }
-  matchEl.addEventListener("pointerup", endDrag);
-  matchEl.addEventListener("pointercancel", function () {
-    dragging = false;
-    matchEl.classList.remove("dragging", "near");
-    matchEl.style.transform = "";
-  });
-  /* 끌기가 어려우면 눌러도 켜지게 */
-  matchEl.addEventListener("click", function () {
-    if (moved) { moved = false; return; }
-    light();
-  });
-  skip.addEventListener("click", function () { light(); });
+  /* ───────── 십자가에 불 켜기 ───────── */
+  var stage  = document.getElementById("stage");
+  var cross  = document.getElementById("cross");
+  var hint   = document.getElementById("hint");
+  var skip   = document.getElementById("skip");
+  var invite = document.getElementById("invite");
+  var lit = false;
   function light() {
     if (lit) { return; }
     lit = true;
-    var a = flamePoint(), b = wickPoint();
-    var r = matchEl.getBoundingClientRect();
-    matchEl.style.transform =
-      "translate(" + (b.x - a.x + (r.left + r.width / 2 - a.x)) + "px," +
-                     (b.y - a.y) + "px) rotate(-14deg)";
     stage.classList.add("is-lit");
+    document.body.classList.add("lit");
     hint.textContent = "불이 켜졌어요";
-    window.setTimeout(function () { matchEl.classList.add("spent"); }, 700);
     invite.hidden = false;
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () { invite.classList.add("in"); });
     });
     window.setTimeout(function () {
       invite.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 1100);
+    }, 1800);
   }
+  cross.addEventListener("click", light);
+  skip.addEventListener("click", light);
   /* ───────── 참석 응답 ───────── */
   /* 응답이 모이는 곳 (Supabase). 이 키는 공개용이라 초대장에 들어가도 괜찮습니다.
      명단 읽기와 한 줄 추가만 허용되고, 고치거나 지우는 건 막혀 있습니다. */
@@ -701,7 +663,7 @@
       var li = document.createElement("li");
       li.className = "guest" + (entry.attending ? "" : " guest--no");
       var mark = document.createElement("span");
-      mark.textContent = entry.attending ? "🎉" : "🙏";
+      mark.textContent = entry.attending ? "🎄" : "🙏";
       li.appendChild(mark);
       var head = document.createElement("span");
       var name = document.createElement("span");
@@ -763,7 +725,6 @@
         ? name + "님, 그날 뵐게요!"
         : name + "님, 마음 보내 주셔서 고마워요.", false);
       if (LIVE) {
-        /* 그 사이 다른 분들이 남긴 응답까지 함께 불러온다 */
         fetchEntries().then(function (list) {
           if (Array.isArray(list)) { entries = list; render(); }
         }, function () {});
