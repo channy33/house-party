@@ -302,6 +302,54 @@
   .fact strong { display: block; font-size: 1.04rem; font-weight: 400; color: var(--ivory); }
   .fact small { display: block; color: var(--muted); font-size: .86rem; margin-top: .1rem; }
   .fact a { color: var(--gold); text-underline-offset: 3px; white-space: nowrap; }
+  .fact .aside { margin-top: .45rem; color: var(--gold); opacity: .85; }
+  /* 진행 순서: 금색 숫자를 가는 선으로 이어 한 줄기 흐름처럼 */
+  .program {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .15rem;
+    position: relative;
+  }
+  .program::before {
+    content: "";
+    position: absolute;
+    left: .95rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 1px;
+    background: var(--gold-line);
+  }
+  .program li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.9rem 1fr;
+    align-items: center;
+    gap: .9rem;
+    padding: .42rem 0;
+  }
+  .program__no {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    border: 1px solid var(--gold-line);
+    background: var(--green);
+    font-family: var(--script);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .program__name {
+    font-size: 1.02rem;
+    color: var(--ivory);
+    word-break: keep-all;
+  }
+  .program li:nth-child(4) .program__no { background: var(--gold); color: var(--green); border-color: var(--gold); }
+  .program li:nth-child(4) .program__name { color: var(--gold); }
   .swatches {
     list-style: none;
     margin: 0;
@@ -550,12 +598,7 @@
           <dd>
             <strong>예수님과 식사를 한다면?</strong>
             <small>어떤 음식을 먹을지 생각해 오고, 준비해 오기</small>
-          </dd>
-        </div>
-        <div class="fact">
-          <dt>케이크</dt>
-          <dd>
-            <strong>교구에서 지원합니다</strong>
+            <small class="aside">※ 케이크는 교구에서 지원합니다</small>
           </dd>
         </div>
         <div class="fact">
@@ -569,6 +612,17 @@
           </dd>
         </div>
       </dl>
+    </section>
+    <section class="panel" aria-labelledby="program-title">
+      <h2 class="section-title" id="program-title">하우스파티 순서</h2>
+      <ol class="program">
+        <li><span class="program__no">1</span><span class="program__name">찬양</span></li>
+        <li><span class="program__no">2</span><span class="program__name">전도사님 한 말씀</span></li>
+        <li><span class="program__no">3</span><span class="program__name">레크리에이션</span></li>
+        <li><span class="program__no">4</span><span class="program__name">예수님 생일 축하</span></li>
+        <li><span class="program__no">5</span><span class="program__name">식교제</span></li>
+        <li><span class="program__no">6</span><span class="program__name">엽서 쓰기</span></li>
+      </ol>
     </section>
     <section class="panel" aria-labelledby="rsvp-title">
       <h2 class="section-title" id="rsvp-title">오실 수 있나요?</h2>
