@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="1ad36087c5">
+<meta name="build" content="708ba4cc6d">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -323,6 +323,7 @@
       height: max(15rem, min(calc(100svh - 24.3rem), calc((min(100vw, 30rem) - 2rem) * 1.162)));
     }
   }
+  .tree-wrap { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   /* 빛이 트리 밖으로 번질 자리를 남기려고 캔버스를 트리보다 크게 깐다 */
   .tree-canvas {
     position: absolute;
@@ -1504,6 +1505,14 @@
     ctx.fillRect(cx - arm / 2, cy - H * 0.27, arm, bar);
     ctx.restore();
   }
+  /* 트리 아무 데나 누르면 그 둘레 전구가 잠깐 환해진다 (십자가 단추는 따로) */
+  var taps = [];
+  wrap.addEventListener("pointerdown", function (event) {
+    if (event.target.closest && event.target.closest(".cross-btn")) { return; }
+    var cr = canvas.getBoundingClientRect();
+    taps.push({ x: event.clientX - cr.left, y: event.clientY - cr.top, t: performance.now() });
+    if (taps.length > 6) { taps.shift(); }
+  });
   function frame(now) {
     if (!running || !geo) { return; }
     level += (levelTarget - level) * 0.03;
@@ -1528,6 +1537,15 @@
     ctx.drawImage(foliageLit, 0, 0);
     ctx.globalAlpha = 1;
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
+    /* 누른 자리: [x, y, 세기, 번진 반지름] 를 이번 장면용으로 계산해 둔다 */
+    var liveTaps = [];
+    var tapR2 = Math.pow(geo.w * 0.13, 2);
+    taps = taps.filter(function (t) { return now - t.t < 1800; });
+    taps.forEach(function (t) {
+      var age = Math.max(0, now - t.t) / 1000;
+      var env = age < 0.12 ? age / 0.12 : Math.exp(-(age - 0.12) * 2.4);
+      liveTaps.push(t.x, t.y, env, age * geo.w * 0.9);
+    });
     /* 전구 */
     ctx.globalCompositeOperation = "lighter";
     var tsec = now / 1000;
@@ -1544,11 +1562,23 @@
         ? 0.45 + 0.55 * litMix
         : Math.max(0, Math.min(1, (litMix - L.delay * 0.55) / 0.45));
       var a = on * L.base * tw * 0.9;
+      /* 누른 자리 둘레 전구가 잠깐 환해지고, 빛이 동그랗게 번져 나간다 */
+      var boost = 0;
+      for (var ti = 0; ti < liveTaps.length; ti += 4) {
+        var dx = L.x - liveTaps[ti], dy = L.y - liveTaps[ti + 1];
+        var d = Math.sqrt(dx * dx + dy * dy);
+        var near = Math.exp(-(d * d) / tapR2);
+        var ring = Math.exp(-Math.pow(d - liveTaps[ti + 3], 2) / 500) * liveTaps[ti + 2] * 0.8;
+        var b = liveTaps[ti + 2] * near + ring;
+        if (b > boost) { boost = b; }
+      }
+      if (boost > 1) { boost = 1; }
+      if (boost > 0.02) { a = Math.max(a, boost * (0.55 + 0.45 * L.base)); }
       if (a < 0.015) { continue; }
       ctx.globalAlpha = a > 1 ? 1 : a;
-      var s = L.r * glow * (L.edge ? 1.15 : 1);
+      var s = L.r * glow * (L.edge ? 1.15 : 1) * (1 + 0.8 * boost);
       ctx.drawImage(L.amber ? spriteAmber : spriteWarm, L.x - s, L.y - s, s * 2, s * 2);
-      if (L.glint && wave > 0.86 && a > 0.3) { glints.push(L, (wave - 0.86) / 0.14 * a); }
+      if (L.glint && ((wave > 0.86 && a > 0.3) || boost > 0.6)) { glints.push(L, Math.max((wave - 0.86) / 0.14 * a, boost)); }
     }
     /* 몇몇 전구는 정점에서 가는 열십자 빛을 낸다 */
     ctx.lineWidth = 0.7;
