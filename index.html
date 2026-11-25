@@ -419,6 +419,41 @@
   .guest--no .guest__mark { color: var(--muted); }
   .guest--no .guest__name { color: var(--muted); font-weight: 400; }
   .empty { color: var(--muted); font-size: .9rem; margin: 0; }
+  /* 방명록 */
+  .panel-lede {
+    margin: -.4rem 0 1.1rem;
+    font-size: .88rem;
+    line-height: 1.7;
+    color: var(--muted);
+    word-break: keep-all;
+  }
+  .btn--line { background: none; color: var(--gold); border: 1px solid var(--gold); }
+  .gb-list { list-style: none; margin: 1.4rem 0 0; padding: 0; display: grid; gap: .7rem; }
+  .gb-empty { margin-top: 1.2rem; }
+  .gb-card {
+    padding: .95rem 1rem .8rem;
+    border: 1px solid var(--gold-line);
+    border-radius: 10px;
+    background: var(--field);
+    min-width: 0;
+  }
+  .gb-card p {
+    margin: 0;
+    font-family: var(--display);
+    font-size: .96rem;
+    line-height: 1.8;
+    color: var(--ivory);
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .gb-card span {
+    display: block;
+    margin-top: .45rem;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .gb-card b { font-weight: 400; color: var(--gold); }
   .foot { text-align: center; color: var(--muted); font-size: .84rem; display: grid; gap: .8rem; justify-items: center; }
   .foot p { margin: 0; }
   .foot .sign { font-family: var(--script); font-style: italic; font-size: 1.15rem; color: var(--ivory-soft); }
@@ -491,7 +526,7 @@
         <path d="M160 2 C161.6 14 166 18.4 178 20 C166 21.6 161.6 26 160 38 C158.4 26 154 21.6 142 20 C154 18.4 158.4 14 160 2 Z" fill="#e6c88c"/>
       </svg>
       <p class="invite-script">Merry Christmas</p>
-      <p class="intro">우리 교회 식구들과 함께 차리는 생신 잔치에 초대합니다.<br>오셔서 같이 먹고, 같이 노래해요.</p>
+      <p class="intro">축복교구 식구들과 함께 차리는 생신 잔치에 초대합니다.<br>오셔서 같이 먹고, 같이 노래해요.</p>
     </header>
     <section class="panel" aria-labelledby="when-where">
       <h2 class="section-title" id="when-where">안내</h2>
@@ -555,10 +590,6 @@
             </label>
           </div>
         </fieldset>
-        <div class="field">
-          <label for="rsvp-word">한마디 (선택)</label>
-          <textarea id="rsvp-word" name="word" maxlength="60" placeholder="생일 축하 인사, 또는 못 오시는 사정"></textarea>
-        </div>
         <button class="btn" type="submit" id="rsvp-submit">응답 보내기</button>
         <p class="note" id="rsvp-status" hidden></p>
       </form>
@@ -572,11 +603,29 @@
       <ul class="guests" id="guest-list"></ul>
       <p class="empty" id="guest-empty">아직 첫 응답을 기다리고 있어요. 제일 먼저 이름을 남겨 주세요.</p>
     </section>
+    <section class="panel" aria-labelledby="gb-title">
+      <h2 class="section-title" id="gb-title">생일 축하 방명록</h2>
+      <p class="panel-lede">예수님께 생일 축하 한마디를 남겨 주세요. 축복교구 모두가 함께 봅니다.</p>
+      <form class="form" id="gb-form" novalidate>
+        <div class="field">
+          <label for="gb-name">이름</label>
+          <input type="text" id="gb-name" maxlength="20" autocomplete="name" placeholder="예) 김찬양">
+        </div>
+        <div class="field">
+          <label for="gb-message">축하 한마디</label>
+          <textarea id="gb-message" maxlength="200" placeholder="예수님, 생일 축하드려요!"></textarea>
+        </div>
+        <button class="btn btn--line" type="submit" id="gb-submit">방명록 남기기</button>
+        <p class="note" id="gb-status" hidden></p>
+      </form>
+      <ul class="gb-list" id="gb-list"></ul>
+      <p class="empty gb-empty" id="gb-empty">첫 축하 인사를 기다리고 있어요.</p>
+    </section>
     <footer class="foot">
       <div class="banner" id="mode-banner" hidden></div>
       <button class="btn-ghost" type="button" id="copy-link">초대장 링크 복사</button>
-      <p class="sign">See you on Christmas</p>
-      <p>성탄의 밤, 반가운 얼굴로 만나요.</p>
+      <p class="sign">See you on December 20th</p>
+      <p>12월 20일 주일, 반가운 얼굴로 만나요.</p>
     </footer>
   </section>
 </div>
@@ -1061,7 +1110,6 @@
   var STORE_KEY = "house-party-rsvp-v1";
   var form       = document.getElementById("rsvp-form");
   var nameEl     = document.getElementById("rsvp-name");
-  var wordEl     = document.getElementById("rsvp-word");
   var yesEl      = document.getElementById("rsvp-yes");
   var submitEl   = document.getElementById("rsvp-submit");
   var statusEl   = document.getElementById("rsvp-status");
@@ -1071,14 +1119,14 @@
   var countNo    = document.getElementById("count-no");
   var banner     = document.getElementById("mode-banner");
   var entries = [];
-  function load() {
+  function load(key) {
     try {
-      var raw = window.localStorage.getItem(STORE_KEY);
+      var raw = window.localStorage.getItem(key || STORE_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
   }
-  function save(list) {
-    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {}
+  function save(list, key) {
+    try { window.localStorage.setItem(key || STORE_KEY, JSON.stringify(list)); } catch (e) {}
   }
   function render() {
     var yes = 0, no = 0;
@@ -1126,12 +1174,13 @@
       nameEl.focus();
       return;
     }
-    /* party 칸은 저장소에 남아 있어서, 참석이면 1 · 불참이면 0 으로 채운다 */
+    /* party 칸은 저장소에 남아 있어서, 참석이면 1 · 불참이면 0 으로 채운다.
+       생일 축하 한마디는 방명록으로 옮겼다. */
     var entry = {
       name: name,
       attending: yesEl.checked,
       party: yesEl.checked ? 1 : 0,
-      word: wordEl.value.trim(),
+      word: "",
       at: new Date().toISOString()
     };
     submitEl.disabled = true;
@@ -1143,6 +1192,8 @@
       setStatus(entry.attending
         ? name + "님, 그날 뵐게요!"
         : name + "님, 마음 보내 주셔서 고마워요.", false);
+      /* 방명록 이름 칸을 미리 채워 둔다 */
+      if (!gbName.value.trim()) { gbName.value = name; }
       if (LIVE) {
         fetchEntries().then(function (list) {
           if (Array.isArray(list)) { entries = list; render(); }
@@ -1167,8 +1218,7 @@
       body: JSON.stringify({
         name: entry.name,
         attending: entry.attending,
-        party: entry.party,
-        word: entry.word
+        party: entry.party
       })
     }).then(function (res) {
       if (!res.ok) { throw new Error("save failed"); }
@@ -1195,17 +1245,111 @@
       copyBtn.textContent = url;
     }
   });
+  /* ───────── 생일 축하 방명록 ───────── */
+  var GB_KEY    = "house-party-guestbook-v1";
+  var gbForm    = document.getElementById("gb-form");
+  var gbName    = document.getElementById("gb-name");
+  var gbMsg     = document.getElementById("gb-message");
+  var gbSubmit  = document.getElementById("gb-submit");
+  var gbStatus  = document.getElementById("gb-status");
+  var gbList    = document.getElementById("gb-list");
+  var gbEmpty   = document.getElementById("gb-empty");
+  var notes = [];
+  function dayLabel(iso) {
+    var d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d.getTime())) { return ""; }
+    return (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+  }
+  function renderNotes() {
+    gbList.textContent = "";
+    notes.forEach(function (n) {
+      var li = document.createElement("li");
+      li.className = "gb-card";
+      var p = document.createElement("p");
+      p.textContent = n.message;
+      li.appendChild(p);
+      var by = document.createElement("span");
+      var who = document.createElement("b");
+      who.textContent = n.name;
+      by.appendChild(document.createTextNode("— "));
+      by.appendChild(who);
+      var when = dayLabel(n.at);
+      if (when) { by.appendChild(document.createTextNode(" · " + when)); }
+      li.appendChild(by);
+      gbList.appendChild(li);
+    });
+    gbEmpty.hidden = notes.length > 0;
+  }
+  function setGbStatus(message, warn) {
+    gbStatus.textContent = message;
+    gbStatus.className = warn ? "note note--warn" : "note";
+    gbStatus.hidden = !message;
+  }
+  function fetchNotes() {
+    if (!LIVE) { return Promise.resolve(load(GB_KEY)); }
+    return fetch(CONFIG.supabaseUrl + "/rest/v1/guestbook?select=name,message,at&order=at.desc&limit=300", {
+      headers: { "apikey": CONFIG.supabaseKey, "Authorization": "Bearer " + CONFIG.supabaseKey }
+    }).then(function (res) {
+      if (!res.ok) { throw new Error("load failed"); }
+      return res.json();
+    });
+  }
+  function sendNote(n) {
+    if (!LIVE) { return Promise.resolve(); }
+    return fetch(CONFIG.supabaseUrl + "/rest/v1/guestbook", {
+      method: "POST",
+      headers: {
+        "apikey": CONFIG.supabaseKey,
+        "Authorization": "Bearer " + CONFIG.supabaseKey,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ name: n.name, message: n.message })
+    }).then(function (res) {
+      if (!res.ok) { throw new Error("save failed"); }
+    });
+  }
+  gbForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var name = gbName.value.trim();
+    var message = gbMsg.value.trim();
+    if (!name) { setGbStatus("이름을 적어 주세요.", true); gbName.focus(); return; }
+    if (!message) { setGbStatus("축하 한마디를 적어 주세요.", true); gbMsg.focus(); return; }
+    var note = { name: name, message: message, at: new Date().toISOString() };
+    gbSubmit.disabled = true;
+    sendNote(note).then(function () {
+      notes.unshift(note);
+      if (!LIVE) { save(notes, GB_KEY); }
+      renderNotes();
+      gbMsg.value = "";
+      setGbStatus(name + "님, 축하 인사 남겨 주셔서 고마워요.", false);
+      if (LIVE) {
+        fetchNotes().then(function (list) {
+          if (Array.isArray(list)) { notes = list; renderNotes(); }
+        }, function () {});
+      }
+    }).catch(function () {
+      setGbStatus("남기지 못했어요. 잠시 뒤 다시 눌러 주세요.", true);
+    }).then(function () {
+      gbSubmit.disabled = false;
+    });
+  });
+  /* ───────── 처음 불러오기 ───────── */
   function fallBackToThisDevice() {
     LIVE = false;
     banner.hidden = false;
-    banner.textContent = "이 화면에서는 저장소에 연결할 수 없어, 적으신 응답이 이 기기에만 남습니다. 실제 주소에 올리면 모두의 명단이 한곳에 모입니다.";
+    banner.textContent = "이 화면에서는 저장소에 연결할 수 없어, 적으신 응답과 방명록이 이 기기에만 남습니다. 실제 주소에 올리면 모두의 글이 한곳에 모입니다.";
     entries = load();
+    notes = load(GB_KEY);
     render();
+    renderNotes();
   }
   if (LIVE) {
-    fetchEntries().then(function (list) {
-      entries = Array.isArray(list) ? list : [];
+    Promise.all([fetchEntries(), fetchNotes()]).then(function (got) {
+      entries = Array.isArray(got[0]) ? got[0] : [];
+      notes   = Array.isArray(got[1]) ? got[1] : [];
       render();
+      renderNotes();
     }, fallBackToThisDevice);
   } else {
     fallBackToThisDevice();
