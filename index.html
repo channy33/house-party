@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="b074853fae">
+<meta name="build" content="6a004c7843">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -1066,6 +1066,7 @@
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
 <script>
 (function () {
   "use strict";
@@ -1747,9 +1748,38 @@
     qrSheet.hidden = true;
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
   }
-  /* 카톡공유: 폰에서는 공유 창을 띄워 카카오톡을 고르게 하고, 공유 창이 없으면 링크를 복사한다 */
+  /* 카톡공유: 카카오 공유로 친구·채팅방을 바로 고르게 한다 (그림 + 제목 + '초대장 보기' 버튼 카드).
+     카카오 앱 키는 https://channy33.github.io 에서만 작동하는 공개용 JavaScript 키.
+     카카오 SDK를 못 불러오면(예: Claude 아티팩트 화면) 폰 공유 창 → 링크 복사 순으로 물러난다. */
+  var KAKAO_KEY = "7cffa45fcd8ca9634ccb3e1c986cdf2a";
+  function kakaoReady() {
+    try {
+      if (!window.Kakao || !window.Kakao.Share) { return false; }
+      if (!window.Kakao.isInitialized()) { window.Kakao.init(KAKAO_KEY); }
+      return true;
+    } catch (e) { return false; }
+  }
   document.getElementById("side-kakao").addEventListener("click", function () {
     var btn = this;
+    if (kakaoReady()) {
+      var og = document.querySelector('meta[property="og:image"]');
+      var desc = document.querySelector('meta[property="og:description"]');
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: {
+            title: "예수님 2026번째 생일에 여러분을 초대합니다",
+            description: desc ? desc.getAttribute("content") : "12.20(주일) 5부 예배 후 · 여의도순복음교회 대성전 지하 3층 실로암식당",
+            imageUrl: og ? og.getAttribute("content") : SHARE_URL + "og.png",
+            imageWidth: 1200,
+            imageHeight: 630,
+            link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL }
+          },
+          buttons: [{ title: "초대장 보기", link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL } }]
+        });
+        return;
+      } catch (e) { /* 아래 방법으로 */ }
+    }
     if (navigator.share) {
       navigator.share({
         title: document.title,
