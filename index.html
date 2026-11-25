@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
+<meta name="build" content="be33aedfae">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
 <meta property="og:url" content="https://channy33.github.io/house-party/">
-<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=971cbdb6">
+<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=e6b82368">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
@@ -72,6 +73,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* 큰 화면에서도 아래가 비지 않게 가운데로 */
     padding-block: 2.9rem 1.25rem; /* 위쪽은 공유 버튼 자리 */
   }
   .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -133,7 +135,7 @@
     z-index: 2;
     font-family: var(--display);
     font-weight: 400;
-    font-size: .92rem;
+    font-size: .88rem;
     letter-spacing: .14em;
     color: var(--ivory-soft);
     margin: 0;
@@ -145,7 +147,7 @@
   .badge .badge__org { font-size: .8em; letter-spacing: .08em; color: #cdbf9f; }
   .badge .badge__name { font-size: 1.06em; letter-spacing: .16em; }
   /* 잎사귀 덩굴 장식 — 위아래로 글을 감싼다 (아래는 뒤집어서) */
-  .badge__orn { display: block; width: 12em; max-width: 78vw; height: auto; color: #d8bd84; opacity: .9; }
+  .badge__orn { display: block; width: 11em; max-width: 78vw; height: auto; color: #d8bd84; opacity: .9; }
   .badge__orn--top { margin-bottom: .2em; }
   .badge__orn--bottom { margin-top: .2em; transform: scaleY(-1); }
   .title {
@@ -154,7 +156,7 @@
     font-family: var(--display);
     font-weight: 700;
     color: var(--ivory);
-    font-size: clamp(1.45rem, 6.6vw, 1.9rem);
+    font-size: clamp(1.35rem, 6.1vw, 1.8rem);
     line-height: 1.5;
     letter-spacing: -.01em;
     text-align: center;
@@ -179,7 +181,7 @@
     .stage { padding-top: 2.7rem; }
     .title { font-size: 1.42rem; }
     .headline { margin-top: .35rem; }
-    .scripture { margin-top: .7rem; }
+    .is-lit .scripture { margin-top: .7rem; }
   }
   .hint {
     position: relative;
@@ -295,10 +297,17 @@
   .tree-wrap {
     position: relative;
     z-index: 2;
-    height: clamp(15rem, calc(100vh - 24.5rem), 24.3rem);
-    height: clamp(15rem, calc(100svh - 24.5rem), 24.3rem);
+    /* 화면 높이에 맞추되, 폭은 화면 폭의 78%를 넘지 않게 */
+    height: max(15rem, min(calc(100vh - 24.5rem), calc((min(100vw, 30rem) - 2rem) * 1.054)));
+    height: max(15rem, min(calc(100svh - 24.5rem), calc((min(100vw, 30rem) - 2rem) * 1.054)));
     aspect-ratio: .74;
-    max-width: 74%;
+  }
+  /* 키 큰 화면에서는 '초대장 보기' 단추가 말씀 아래 가운데에 뜨므로 그 자리도 남긴다 */
+  @media (min-height: 781px) {
+    .tree-wrap {
+      height: max(15rem, min(calc(100vh - 27.6rem), calc((min(100vw, 30rem) - 2rem) * 1.054)));
+      height: max(15rem, min(calc(100svh - 27.6rem), calc((min(100vw, 30rem) - 2rem) * 1.054)));
+    }
     margin-top: .7rem;
   }
   /* 빛이 트리 밖으로 번질 자리를 남기려고 캔버스를 트리보다 크게 깐다 */
@@ -331,7 +340,7 @@
   .scripture {
     position: relative;
     z-index: 2;
-    margin: 1rem 0 0;
+    margin: 0;
     max-width: 23rem;
     display: grid;
     gap: .3rem;
@@ -351,8 +360,18 @@
     transition: color 1.8s ease 1s, text-shadow 1.8s ease 1s;
   }
   /* 처음엔 보이지 않다가 십자가 빛을 따라 떠오른다 */
-  .scripture { opacity: 0; visibility: hidden; transition: opacity 1.8s ease 1s, visibility 0s 1s; }
-  .is-lit .scripture { opacity: 1; visibility: visible; transition: opacity 1.8s ease 1s; }
+  /* 처음엔 자리도 차지하지 않다가(그래서 트리가 화면 가운데 앉는다),
+     켜지면 자리가 천천히 벌어지며 트리가 살짝 올라가고 말씀이 떠오른다 */
+  .scripture {
+    opacity: 0; visibility: hidden;
+    max-height: 0; overflow: hidden;
+    transition: opacity 1.8s ease 1.2s, max-height 1.4s ease .5s, margin 1.4s ease .5s, visibility 0s 2s;
+  }
+  .is-lit .scripture {
+    opacity: 1; visibility: visible;
+    max-height: 14rem; margin-top: 1rem;
+    transition: opacity 1.8s ease 1.2s, max-height 1.4s ease .5s, margin 1.4s ease .5s;
+  }
   .is-lit .scripture .ko {
     color: #fff1cf;
     text-shadow: 0 0 12px rgba(255, 200, 110, .55), 0 0 2px rgba(255, 220, 160, .5);
@@ -985,6 +1004,27 @@
   /* '동작 줄이기'가 켜진 폰에서도 반짝임·눈은 그대로 둔다 (은은한 배경이라).
      빙글 도는 빛살만 멈춘다. */
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* ───────── 새 버전이 올라갔으면 한 번 새로 불러오기 ─────────
+     카톡 같은 앱 안 브라우저는 예전 화면을 오래 들고 있을 수 있다. 웹에 올린 판(dist)에만
+     build 꼬리표가 붙어 있어서, 서버의 최신 꼬리표와 다르면 주소에 꼬리표를 붙여 다시 연다.
+     십자가를 이미 눌렀으면 건드리지 않고, 같은 판으로는 한 번만 시도한다. */
+  (function () {
+    var meta = document.querySelector('meta[name="build"]');
+    if (!meta || !window.fetch) { return; }
+    var mine = meta.getAttribute("content");
+    window.fetch(location.pathname + "?check=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (text) {
+        var m = text.match(/<meta name="build" content="([^"]+)"/);
+        if (!m || m[1] === mine || document.body.classList.contains("lit")) { return; }
+        try {
+          if (window.sessionStorage.getItem("hp-reload-" + m[1])) { return; }
+          window.sessionStorage.setItem("hp-reload-" + m[1], "1");
+        } catch (e) { return; }
+        location.replace(location.pathname + "?v=" + m[1] + location.hash);
+      })
+      .catch(function () {});
+  })();
   /* ───────── 트리 그리기 ─────────
      바늘잎 수천 가닥은 한 번만 그려 두고(어두운 판 + 불 받은 판),
      전구 천여 개만 매 순간 다시 그린다. 같은 씨앗을 써서 열 때마다 같은 트리가 나온다. */
