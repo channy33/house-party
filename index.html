@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="00315e0dd0">
+<meta name="build" content="e368edc0ab">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -483,6 +483,31 @@
   #side-music[aria-pressed="true"] svg { animation: musicBob 1.6s ease-in-out infinite; }
   @keyframes musicBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   @media (prefers-reduced-motion: reduce) { #side-music[aria-pressed="true"] svg { animation: none; } }
+  /* 오시는 길 사진 */
+  .way-link {
+    appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
+    font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--gold); white-space: nowrap;
+  }
+  .way-card { width: min(26rem, 100%); max-height: calc(100svh - 32px); overflow-y: auto; padding-bottom: .6rem; }
+  .way-shot { position: relative; margin: 0 0 .9rem; border-radius: 12px; overflow: hidden; background: #0c1712; }
+  .way-shot img { display: block; width: 100%; height: auto; }
+  .way-step {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .85rem; font-weight: 700; color: var(--green); background: var(--gold);
+  }
+  /* 사진 위 손글씨 메모 (원래 사진의 빨간 손글씨를 B3로 고쳐 다시 씀) */
+  .way-note {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 2.2rem .8rem .7rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0));
+    font-family: "Gaegu", var(--body); font-weight: 700; font-size: 1.35rem; line-height: 1.25;
+    color: #ff4a3d; text-align: center;
+    text-shadow: 0 0 3px #fff, 0 0 2px #fff, 0 1px 0 #fff;
+  }
+  .way-plain { padding: .6rem .8rem .7rem; font-size: .85rem; color: var(--ivory-soft); text-align: center; }
   /* 공유하기 창 */
   .share-icons { display: flex; justify-content: center; gap: 1.1rem; margin: .2rem 0 1.1rem; }
   .share-icon {
@@ -996,7 +1021,7 @@
           <dt>장소</dt>
           <dd>
             <strong>실로암식당</strong>
-            <small>여의도순복음교회 대성전 지하 3층 · <a href="https://map.naver.com/p/search/%EC%97%AC%EC%9D%98%EB%8F%84%EC%88%9C%EB%B3%B5%EC%9D%8C%EA%B5%90%ED%9A%8C" target="_blank" rel="noopener">지도 보기</a></small>
+            <small>여의도순복음교회 대성전 지하 3층 · <button type="button" class="way-link" id="way-open" aria-haspopup="dialog">오시는 길 사진</button></small>
           </dd>
         </div>
         <div class="fact">
@@ -1042,11 +1067,11 @@
           <div class="choices">
             <label class="choice">
               <input type="radio" name="attending" value="yes" id="rsvp-yes" checked>
-              <span>갈게요</span>
+              <span>참석</span>
             </label>
             <label class="choice">
               <input type="radio" name="attending" value="no" id="rsvp-no">
-              <span>못 가요</span>
+              <span>불참</span>
             </label>
           </div>
         </fieldset>
@@ -1101,6 +1126,23 @@
       <button class="btn btn--line" id="qr-share" type="button" hidden>공유하기</button>
     </div>
     <button class="qr-close" id="qr-close" type="button">닫기</button>
+  </div>
+</div>
+<!-- 오시는 길: 사진 두 장 -->
+<div class="qr-sheet" id="way-sheet" role="dialog" aria-modal="true" aria-labelledby="way-title" hidden>
+  <div class="qr-card way-card" id="way-card" tabindex="-1">
+    <p class="qr-title" id="way-title">오시는 길</p>
+    <figure class="way-shot">
+      <span class="way-step">1</span>
+      <img src="way/1-entrance.jpg" width="900" height="932" loading="lazy" alt="여의도순복음교회 대성전 앞, 노란 선으로 표시한 유리 엘리베이터">
+      <figcaption class="way-note">엘베 타고 B3 내려서<br>오른쪽 통로로 이동</figcaption>
+    </figure>
+    <figure class="way-shot">
+      <span class="way-step">2</span>
+      <img src="way/2-stairs.jpg" width="900" height="1200" loading="lazy" alt="계단 벽의 실로암식당 안내 표지판">
+      <figcaption class="way-plain">'실로암식당' 표지판을 따라오세요</figcaption>
+    </figure>
+    <button class="qr-close" id="way-close" type="button">닫기</button>
   </div>
 </div>
 <!-- 공유하기 창: 카카오톡 · QR 코드 · 다른 앱, 아래에 주소 복사 -->
@@ -2097,6 +2139,24 @@
       copyLink(btn, "복사됨");
     }
   }
+  /* 오시는 길 사진 */
+  var waySheet = document.getElementById("way-sheet");
+  function openWay() {
+    lastFocus = document.activeElement;
+    waySheet.hidden = false;
+    var card = document.getElementById("way-card");
+    card.scrollTop = 0;
+    card.focus();
+  }
+  function closeWay() {
+    waySheet.hidden = true;
+    if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
+  }
+  document.getElementById("way-open").addEventListener("click", openWay);
+  document.getElementById("way-close").addEventListener("click", closeWay);
+  waySheet.addEventListener("click", function (event) {
+    if (event.target === waySheet) { closeWay(); }
+  });
   /* 공유하기 창 */
   var shareSheet = document.getElementById("share-sheet");
   var shareMore = document.getElementById("share-more");
@@ -2143,6 +2203,7 @@
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && !qrSheet.hidden) { closeQR(); }
     if (event.key === "Escape" && !shareSheet.hidden) { closeShare(); }
+    if (event.key === "Escape" && !waySheet.hidden) { closeWay(); }
   });
   /* 트리가 있는 첫 화면으로 (불은 켜진 그대로) */
   document.getElementById("to-top").addEventListener("click", function () {
