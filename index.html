@@ -9,7 +9,7 @@
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
 <meta property="og:url" content="https://channy33.github.io/house-party/">
-<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=b1192b48">
+<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=06e36ca9">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
@@ -72,7 +72,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: 3.2rem 1.25rem; /* 위쪽은 공유 버튼 자리 */
+    padding-block: 2.9rem 1.25rem; /* 위쪽은 공유 버튼 자리 */
   }
   .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   .sky--night {
@@ -139,16 +139,15 @@
     margin: 0;
     display: grid;
     justify-items: center;
-    gap: .15rem;
     text-align: center;
   }
-  .badge p { margin: 0; line-height: 1.5; }
+  .badge p { margin: 0; line-height: 1.4; }
   .badge .badge__org { font-size: .8em; letter-spacing: .08em; color: #cdbf9f; }
   .badge .badge__name { font-size: 1.06em; letter-spacing: .16em; }
   /* 잎사귀 덩굴 장식 — 위아래로 글을 감싼다 (아래는 뒤집어서) */
-  .badge__orn { display: block; width: 13.5em; max-width: 78vw; height: auto; color: #d8bd84; opacity: .9; }
-  .badge__orn--top { margin-bottom: .35em; }
-  .badge__orn--bottom { margin-top: .35em; transform: scaleY(-1); }
+  .badge__orn { display: block; width: 12em; max-width: 78vw; height: auto; color: #d8bd84; opacity: .9; }
+  .badge__orn--top { margin-bottom: .2em; }
+  .badge__orn--bottom { margin-top: .2em; transform: scaleY(-1); }
   .title {
     position: relative;
     z-index: 2;
@@ -160,14 +159,32 @@
     letter-spacing: -.01em;
     text-align: center;
     text-wrap: balance;
-    margin: .9rem 0 0;
-    transition: text-shadow 2.4s ease;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1.4s ease .5s, transform 1.4s ease .5s, text-shadow 2.4s ease .5s;
   }
-  .is-lit .title { text-shadow: 0 0 22px rgba(255, 196, 112, .45); }
+  .is-lit .title { opacity: 1; transform: none; text-shadow: 0 0 22px rgba(255, 196, 112, .45); }
+  /* 안내 문구와 제목이 겹쳐 앉는 한 칸 */
+  .headline {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    margin-top: .55rem;
+    width: 100%;
+  }
+  .headline > * { grid-area: 1 / 1; align-self: center; }
+  /* 화면이 짧은 폰(카톡 안 등)에서는 위쪽을 조금씩 줄여 트리와 말씀 자리를 낸다 */
+  @media (max-height: 720px) {
+    .stage { padding-top: 2.7rem; }
+    .title { font-size: 1.42rem; }
+    .headline { margin-top: .35rem; }
+    .scripture { margin-top: .7rem; }
+  }
   .hint {
     position: relative;
     z-index: 2;
-    margin: .8rem 0 0;
+    margin: 0;
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: .02em;
@@ -181,7 +198,7 @@
     transition: opacity .6s ease;
   }
   @keyframes hintGlow { 0%,100% { opacity: .78 } 50% { opacity: 1 } }
-  .is-lit .hint { animation: none; opacity: 0; }
+  .is-lit .hint { animation: none; opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
   /* ───────── 오른쪽 위 공유 버튼 ───────── */
   .share-bar {
     position: absolute;
@@ -273,12 +290,16 @@
     cursor: pointer;
   }
   /* ───────── 트리 ───────── */
+  /* 불을 켠 뒤 이름표·제목·트리·한글 말씀이 폰 한 화면에 들어오도록 트리 높이를 화면 높이에 맞춘다
+     (카톡 안에서 열면 위아래 막대 때문에 화면이 더 짧다) */
   .tree-wrap {
     position: relative;
     z-index: 2;
-    width: min(18rem, 74%);
+    height: clamp(12.5rem, calc(100vh - 29rem), 24rem);
+    height: clamp(12.5rem, calc(100svh - 29rem), 24rem);
     aspect-ratio: .74;
-    margin-top: .9rem;
+    max-width: 74%;
+    margin-top: .7rem;
   }
   /* 빛이 트리 밖으로 번질 자리를 남기려고 캔버스를 트리보다 크게 깐다 */
   .tree-canvas {
@@ -310,7 +331,7 @@
   .scripture {
     position: relative;
     z-index: 2;
-    margin: 2.1rem 0 0;
+    margin: 1rem 0 0;
     max-width: 23rem;
     display: grid;
     gap: .3rem;
@@ -336,10 +357,11 @@
   }
   /* 말씀: 켜기 전에는 어둠 속에 희미하게, 십자가 빛이 퍼지면 뒤따라 금빛으로 밝아진다 */
   .scripture p, .scripture .ref {
-    transition: color 1.8s ease .45s, text-shadow 1.8s ease .45s, opacity 1.8s ease .45s;
+    transition: color 1.8s ease 1s, text-shadow 1.8s ease 1s;
   }
-  .scripture { opacity: .62; transition: opacity 1.8s ease .45s; }
-  .is-lit .scripture { opacity: 1; }
+  /* 처음엔 보이지 않다가 십자가 빛을 따라 떠오른다 */
+  .scripture { opacity: 0; visibility: hidden; transition: opacity 1.8s ease 1s, visibility 0s 1s; }
+  .is-lit .scripture { opacity: 1; visibility: visible; transition: opacity 1.8s ease 1s; }
   .is-lit .scripture .ko {
     color: #fff1cf;
     text-shadow: 0 0 12px rgba(255, 200, 110, .55), 0 0 2px rgba(255, 220, 160, .5);
@@ -351,6 +373,38 @@
   @media (prefers-reduced-motion: reduce) {
     .snow i { animation-name: fall; }
   }
+  /* 불을 켠 뒤 화면 아래에 떠 있는 '초대장 보기' — 조금이라도 내리면 사라진다 */
+  .to-invite {
+    position: fixed;
+    z-index: 20;
+    left: 50%;
+    bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font: inherit;
+    font-size: .84rem;
+    color: #ffe3a6;
+    background: rgba(20, 16, 10, .55);
+    border: 1px solid rgba(232, 194, 122, .55);
+    border-radius: 999px;
+    padding: .45rem 1rem;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 18px rgba(255, 196, 112, .25);
+    opacity: 0;
+    transition: opacity .8s ease;
+  }
+  .to-invite[hidden] { display: none; }
+  .to-invite.is-on { opacity: 1; animation: nudge 2.4s ease-in-out 1s infinite; }
+  .to-invite svg { width: 14px; height: 14px; }
+  @keyframes nudge {
+    0%, 100% { transform: translate(-50%, 0); }
+    50%      { transform: translate(-50%, 4px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .to-invite.is-on { animation: none; } }
   /* ───────── 초대장 ───────── */
   /* 배경은 body(짙은 초록)가 맡고 이 판은 투명하게 둔다 — 그래야 뒤로 눈이 비친다 */
   .invite {
@@ -779,8 +833,11 @@
       <p class="badge__name">하우스파티 초대장</p>
       <svg class="badge__orn badge__orn--bottom" viewBox="0 0 260 36" aria-hidden="true"><use href="#flourish"/></svg>
     </div>
-    <h1 class="title">예수님 2026번째<br>생일에 여러분을 초대합니다</h1>
-    <p class="hint" id="hint">트리 꼭대기 십자가를 누르면 초대장을 볼 수 있어요</p>
+    <!-- 안내 문구와 제목은 한 자리를 나눠 쓴다: 처음엔 안내만, 십자가를 켜면 제목으로 바뀐다 -->
+    <div class="headline">
+      <p class="hint" id="hint">트리 꼭대기 십자가를 누르면 초대장을 볼 수 있어요</p>
+      <h1 class="title">예수님 2026번째<br>생일에 여러분을 초대합니다</h1>
+    </div>
     <div class="tree-wrap" id="tree-wrap">
       <canvas class="tree-canvas" id="tree-canvas" role="img" aria-label="작은 전구가 촘촘히 빛나는 성탄 트리와 꼭대기의 십자가"></canvas>
       <button class="cross-btn" id="cross" type="button" aria-label="십자가에 불 켜기"></button>
@@ -793,6 +850,10 @@
     </blockquote>
   </section>
   <!-- ───────── 초대장 ───────── -->
+  <button class="to-invite" id="to-invite" type="button" hidden>
+    초대장 보기
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5L8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
   <section class="invite gutter" id="invite" hidden aria-label="초대장">
     <header class="invite-head">
       <svg class="spark" viewBox="0 0 320 40" aria-hidden="true">
@@ -1376,6 +1437,19 @@
   var hint   = document.getElementById("hint");
   var invite = document.getElementById("invite");
   var lit = false;
+  var toInvite = document.getElementById("to-invite");
+  function hideCue() {
+    if (toInvite.hidden) { return; }
+    toInvite.classList.remove("is-on");
+    window.setTimeout(function () { toInvite.hidden = true; }, 800);
+  }
+  toInvite.addEventListener("click", function () {
+    hideCue();
+    invite.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  window.addEventListener("scroll", function () {
+    if (window.scrollY > 60) { hideCue(); }
+  }, { passive: true });
   /* instant 는 화면 그림을 뜰 때만 쓴다 (shots.mjs) — 애니메이션을 건너뛰고 끝 상태로 */
   function light(instant) {
     if (lit) { return; }
@@ -1389,9 +1463,14 @@
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () { invite.classList.add("in"); });
     });
+    /* 저절로 내려가지 않는다 — 말씀을 다 읽고 직접 내려가도록 '초대장 보기'만 띄운다 */
     window.setTimeout(function () {
-      invite.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 3200); /* 밝아진 말씀을 잠깐 읽을 틈을 두고 내려간다 */
+      if (window.scrollY > 60) { return; }
+      toInvite.hidden = false;
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(function () { toInvite.classList.add("is-on"); });
+      });
+    }, instant === true ? 0 : 3000);
   }
   document.getElementById("cross").addEventListener("click", function () { light(); });
   window.__lightTree = light;
