@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
-<meta name="build" content="1a30fe38b6">
+<meta name="build" content="c8b80aba17">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
 <meta property="og:url" content="https://channy33.github.io/house-party/">
-<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=92a3b37f">
+<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=109094d9">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
@@ -306,17 +306,22 @@
     cursor: pointer;
   }
   /* ───────── 트리 ───────── */
-  /* 첫 화면에서 트리가 화면 아래까지 꽉 차게: 이름표·안내 문구를 뺀 높이를 다 쓴다.
-     말씀은 십자가를 누른 뒤 트리 아래에 나타나고, 내려서 읽는다 (트리는 작아지지 않는다).
-     폭은 화면 폭을 넘지 않게 — 화면이 길쭉하면 트리도 조금 날씬해진다. */
+  /* 불을 켠 뒤 이름표·제목·트리·한글 말씀이 폰 한 화면에 들어오도록 트리 높이를 화면 높이에 맞춘다
+     (카톡 안에서 열면 위아래 막대 때문에 화면이 더 짧다). 폭은 화면 폭의 86%를 넘지 않게. */
   .tree-wrap {
     position: relative;
     z-index: 2;
-    margin-top: .7rem;
-    height: max(20rem, min(calc(100vh - 13.5rem), 44rem));
-    height: max(20rem, min(calc(100svh - 13.5rem), 44rem));
-    width: min(calc(min(100vw, 30rem) - 1rem), calc(max(20rem, min(100vh - 13.5rem, 44rem)) * .74));
-    width: min(calc(min(100vw, 30rem) - 1rem), calc(max(20rem, min(100svh - 13.5rem, 44rem)) * .74));
+    margin-top: 0;
+    height: max(15rem, min(calc(100vh - 22rem), calc((min(100vw, 30rem) - 2rem) * 1.162)));
+    height: max(15rem, min(calc(100svh - 22rem), calc((min(100vw, 30rem) - 2rem) * 1.162)));
+    aspect-ratio: .74;
+  }
+  /* 키 큰 화면에서는 '초대장 보기' 단추가 말씀 아래 가운데에 뜨므로 그 자리도 남긴다 */
+  @media (min-height: 781px) {
+    .tree-wrap {
+      height: max(15rem, min(calc(100vh - 25.1rem), calc((min(100vw, 30rem) - 2rem) * 1.162)));
+      height: max(15rem, min(calc(100svh - 25.1rem), calc((min(100vw, 30rem) - 2rem) * 1.162)));
+    }
   }
   /* 빛이 트리 밖으로 번질 자리를 남기려고 캔버스를 트리보다 크게 깐다 */
   .tree-canvas {
