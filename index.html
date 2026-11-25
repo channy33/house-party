@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="f92397cdc8">
+<meta name="build" content="2675dbbb6e">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -433,6 +433,8 @@
   }
   @media (prefers-reduced-motion: reduce) { .to-invite.is-on { animation: none; } }
   /* 오른쪽 바로 가기 */
+  /* 화면에는 숨기고 읽어 주기 프로그램에만 */
+  .sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .side-nav {
     position: fixed;
     z-index: 30;
