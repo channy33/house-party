@@ -232,22 +232,6 @@
     color: #a89f8a;
     margin-top: .15rem;
   }
-  .skip {
-    position: relative;
-    z-index: 2;
-    appearance: none;
-    border: 0;
-    background: none;
-    font: inherit;
-    font-size: .8rem;
-    color: var(--muted);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-    padding: .3rem .5rem;
-    margin-top: .5rem;
-  }
-  .is-lit .skip { visibility: hidden; }
   @media (prefers-reduced-motion: reduce) {
     .snow i, .hint { animation: none !important; }
   }
@@ -646,7 +630,6 @@
       <p class="en">“For a child is born to us, a son is given to us. The government will rest on his shoulders. And he will be called: Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace.”</p>
       <p class="ref ref--en">Isaiah 9:6</p>
     </blockquote>
-    <button class="skip" id="skip" type="button">초대장 바로 보기</button>
   </section>
   <!-- ───────── 초대장 ───────── -->
   <section class="invite gutter" id="invite" hidden aria-label="초대장">
@@ -1236,7 +1219,6 @@
     }, 2600);
   }
   document.getElementById("cross").addEventListener("click", function () { light(); });
-  document.getElementById("skip").addEventListener("click", function () { light(); });
   window.__lightTree = light;
   /* 화면 그림을 뜰 때 예시 포스트잇을 보여 주는 용도 (shots.mjs DEMO=1) — 저장은 하지 않는다 */
   window.__showNotes = function (list) { notes = list; renderNotes(); };
