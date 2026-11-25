@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="708ba4cc6d">
+<meta name="build" content="686a875d14">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -350,7 +350,6 @@
     cursor: pointer;
   }
   .cross-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: -6px; }
-  .is-lit .cross-btn { pointer-events: none; }
   .scripture {
     position: relative;
     z-index: 2;
@@ -478,6 +477,12 @@
   }
   .side-nav__share button { color: #e8c27a; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }
   .side-nav__share svg { width: 15px; height: 15px; }
+  .side-nav__share { gap: 4px; }
+  #side-music { color: var(--muted); }
+  #side-music[aria-pressed="true"] { color: #ffe3a6; }
+  #side-music[aria-pressed="true"] svg { animation: musicBob 1.6s ease-in-out infinite; }
+  @keyframes musicBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  @media (prefers-reduced-motion: reduce) { #side-music[aria-pressed="true"] svg { animation: none; } }
   /* 공유하기 창 */
   .share-icons { display: flex; justify-content: center; gap: 1.1rem; margin: .2rem 0 1.1rem; }
   .share-icon {
@@ -963,6 +968,7 @@
       <a href="#gb-title" data-go="gb-title">방명록</a>
     </div>
     <div class="side-nav__share">
+      <button type="button" id="side-music" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.2V3.5l7-1.5v8.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="4.4" cy="12.2" r="1.7" fill="currentColor"/><circle cx="11.4" cy="10.4" r="1.7" fill="currentColor"/></svg><span id="side-music-label">음악</span></button>
       <button type="button" id="side-share" aria-haspopup="dialog"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 10V2.5M5 5.2L8 2.2l3 3M3.5 8.5v4.2a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V8.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>공유</span></button>
     </div>
   </nav>
@@ -1505,6 +1511,25 @@
     ctx.fillRect(cx - arm / 2, cy - H * 0.27, arm, bar);
     ctx.restore();
   }
+  /* 불 켜진 십자가를 다시 누르면: 십자가가 번쩍이고, 금가루가 터지고,
+     빛이 꼭대기에서 아래로 물결처럼 흘러내린다 */
+  var flowStart = -1;
+  var dust = [];
+  function crossBurst() {
+    if (!geo) { return; }
+    var now = performance.now();
+    flowStart = now;
+    var rnd = Math.random;
+    for (var i = 0; i < 90; i++) {
+      var ang = -Math.PI / 2 + (rnd() - 0.5) * Math.PI * 1.9;
+      var sp = 40 + rnd() * 150;
+      dust.push({
+        x: geo.cx, y: geo.crossY, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 20,
+        b: now, life: 1.8 + rnd() * 1.6, s: 0.6 + rnd() * 1.5, ph: rnd() * 6.3
+      });
+    }
+    if (dust.length > 300) { dust.splice(0, dust.length - 300); }
+  }
   /* 트리 아무 데나 누르면 그 둘레 전구가 잠깐 환해진다 (십자가 단추는 따로) */
   var taps = [];
   wrap.addEventListener("pointerdown", function (event) {
@@ -1537,6 +1562,16 @@
     ctx.drawImage(foliageLit, 0, 0);
     ctx.globalAlpha = 1;
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
+    /* 십자가에서 흘러내리는 빛의 높이 */
+    var flowY = null, flowFade = 0;
+    if (flowStart >= 0) {
+      var fage = (now - flowStart) / 1000;
+      if (fage > 3.2) { flowStart = -1; }
+      else {
+        flowY = geo.top - 30 + fage * (geo.bottom - geo.top + 60) / 1.5;
+        flowFade = fage < 1.5 ? 1 : Math.exp(-(fage - 1.5) * 3);
+      }
+    }
     /* 누른 자리: [x, y, 세기, 번진 반지름] 를 이번 장면용으로 계산해 둔다 */
     var liveTaps = [];
     var tapR2 = Math.pow(geo.w * 0.13, 2);
@@ -1572,6 +1607,10 @@
         var b = liveTaps[ti + 2] * near + ring;
         if (b > boost) { boost = b; }
       }
+      if (flowY !== null) {
+        var fb = Math.exp(-Math.pow(L.y - flowY, 2) / 1400) * flowFade * 0.72;
+        if (fb > boost) { boost = fb; }
+      }
       if (boost > 1) { boost = 1; }
       if (boost > 0.02) { a = Math.max(a, boost * (0.55 + 0.45 * L.base)); }
       if (a < 0.015) { continue; }
@@ -1596,6 +1635,37 @@
     ctx.globalCompositeOperation = "source-over";
     drawReds(now, litMix);
     drawCross(now);
+    /* 금가루와 십자가 번쩍임 */
+    if (dust.length || flowStart >= 0) {
+      ctx.globalCompositeOperation = "lighter";
+      if (flowStart >= 0) {
+        var fa = Math.exp(-((now - flowStart) / 1000) * 2.2);
+        var fl = ctx.createRadialGradient(geo.cx, geo.crossY, 0, geo.cx, geo.crossY, geo.w * 0.7);
+        fl.addColorStop(0, "rgba(255,236,190," + (0.55 * fa) + ")");
+        fl.addColorStop(0.4, "rgba(255,210,140," + (0.18 * fa) + ")");
+        fl.addColorStop(1, "rgba(255,200,120,0)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = fl;
+        ctx.fillRect(geo.cx - geo.w, geo.crossY - geo.w, geo.w * 2, geo.w * 2);
+      }
+      var alive = [];
+      for (var di = 0; di < dust.length; di++) {
+        var P = dust[di];
+        var t = (now - P.b) / 1000;
+        if (t > P.life) { continue; }
+        alive.push(P);
+        var drag = (1 - Math.exp(-1.7 * t)) / 1.7;
+        var px = P.x + P.vx * drag + Math.sin(t * 2 + P.ph) * 4;
+        var py = P.y + P.vy * drag + 14 * t * t;
+        var fade = Math.pow(1 - t / P.life, 1.2) * (0.65 + 0.35 * Math.sin(t * 11 + P.ph));
+        ctx.globalAlpha = Math.max(0, Math.min(1, fade));
+        var ds = P.s * 4.2;
+        ctx.drawImage(spriteAmber, px - ds, py - ds, ds * 2, ds * 2);
+      }
+      dust = alive;
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+    }
     window.requestAnimationFrame(frame);
   }
   function start() {
@@ -1701,7 +1771,10 @@
       });
     }, instant === true ? 0 : 3000);
   }
-  document.getElementById("cross").addEventListener("click", function () { light(); });
+  document.getElementById("cross").addEventListener("click", function () {
+    if (!lit) { light(); } else { crossBurst(); }
+    startMusic();
+  });
   window.__lightTree = light;
   /* 화면 그림을 뜰 때 예시 포스트잇을 보여 주는 용도 (shots.mjs DEMO=1) — 저장은 하지 않는다 */
   window.__showNotes = function (list) { notes = list; renderNotes(); };
@@ -1835,6 +1908,111 @@
     qrSheet.hidden = true;
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
   }
+  /* ───────── 배경 음악: 고요한 밤 거룩한 밤 (F. 그루버, 1818 — 저작권 만료) ─────────
+     음악 파일 없이 브라우저가 직접 연주한다. 오르골 같은 가락 + 아주 낮은 화음.
+     폰은 사용자가 누르기 전엔 소리를 못 내므로, 십자가를 처음 누를 때 시작한다.
+     오른쪽 '음악' 단추로 끄고 켤 수 있고, 끈 것은 이 기기에 기억해 둔다. */
+  var musicBtn = document.getElementById("side-music");
+  var musicLabel = document.getElementById("side-music-label");
+  var audio = null, master = null, musicOn = false, musicTimer = 0, musicMuted = false;
+  try { musicMuted = window.localStorage.getItem("hp-music") === "off"; } catch (e) {}
+  /* [음, 길이(8분음표 단위)] — 6/8박자 */
+  var MELODY = [
+    ["G4",3],["A4",1],["G4",2],["E4",6],
+    ["G4",3],["A4",1],["G4",2],["E4",6],
+    ["D5",4],["D5",2],["B4",6],
+    ["C5",4],["C5",2],["G4",6],
+    ["A4",4],["A4",2],["C5",3],["B4",1],["A4",2],
+    ["G4",3],["A4",1],["G4",2],["E4",6],
+    ["A4",4],["A4",2],["C5",3],["B4",1],["A4",2],
+    ["G4",3],["A4",1],["G4",2],["E4",6],
+    ["D5",4],["D5",2],["F5",3],["D5",1],["B4",2],
+    ["C5",6],["E5",6],
+    ["C5",3],["G4",1],["E4",2],["G4",3],["F4",1],["D4",2],
+    ["C4",12]
+  ];
+  /* 마디마다 깔리는 낮은 화음 */
+  var CHORDS = ["C","C","C","C","G","G","C","C","F","F","C","C","F","F","C","C","G","G","C","C","C","G","C","C"];
+  var CHORD_NOTES = { C: ["C3","G3","E4"], F: ["F2","C3","A3"], G: ["G2","D3","B3"] };
+  var EIGHTH = 0.42;
+  function freq(n) {
+    var map = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+    var semis = map[n[0]] + (parseInt(n.slice(1), 10) + 1) * 12;
+    return 440 * Math.pow(2, (semis - 69) / 12);
+  }
+  function tone(f, at, dur, vol, type) {
+    var o = audio.createOscillator(), g = audio.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(vol, at + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0008, at + dur);
+    o.connect(g); g.connect(master);
+    o.start(at); o.stop(at + dur + 0.05);
+  }
+  function playOnce() {
+    if (!musicOn) { return; }
+    var t = audio.currentTime + 0.15, bar = 0, inBar = 0;
+    MELODY.forEach(function (m) {
+      var len = m[1] * EIGHTH, f = freq(m[0]);
+      tone(f, t, Math.max(len * 1.6, 1.2), 0.22, "sine");      /* 오르골 같은 가락 */
+      tone(f * 2, t, 0.6, 0.035, "sine");                        /* 위로 살짝 맑은 울림 */
+      t += len;
+    });
+    var bt = audio.currentTime + 0.15;
+    CHORDS.forEach(function (c) {
+      CHORD_NOTES[c].forEach(function (n) { tone(freq(n), bt, 6 * EIGHTH * 1.3, 0.05, "triangle"); });
+      bt += 6 * EIGHTH;
+    });
+    var total = MELODY.reduce(function (a, m) { return a + m[1]; }, 0) * EIGHTH;
+    musicTimer = window.setTimeout(playOnce, (total + 3) * 1000);
+  }
+  function setMusicUI() {
+    musicBtn.setAttribute("aria-pressed", musicOn ? "true" : "false");
+    musicLabel.textContent = musicOn ? "음악 끄기" : "음악";
+  }
+  function startMusic(fromButton) {
+    if (musicOn || (musicMuted && !fromButton)) { return; }
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { return; }
+    try {
+      if (!audio) {
+        audio = new AC();
+        master = audio.createGain();
+        master.gain.value = 0.32;
+        /* 살짝 울리는 공간감: 짧은 메아리를 낮게 섞는다 */
+        var delay = audio.createDelay(), fb = audio.createGain(), wet = audio.createGain(), lp = audio.createBiquadFilter();
+        delay.delayTime.value = 0.33; fb.gain.value = 0.28; wet.gain.value = 0.35; lp.type = "lowpass"; lp.frequency.value = 2200;
+        master.connect(audio.destination);
+        master.connect(delay); delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(audio.destination);
+      }
+      if (audio.state === "suspended") { audio.resume(); }
+      musicOn = true;
+      setMusicUI();
+      playOnce();
+    } catch (e) { musicOn = false; }
+  }
+  function stopMusic() {
+    musicOn = false;
+    window.clearTimeout(musicTimer);
+    if (audio) { audio.close(); audio = null; master = null; }
+    setMusicUI();
+  }
+  musicBtn.addEventListener("click", function () {
+    if (musicOn) {
+      stopMusic();
+      musicMuted = true;
+      try { window.localStorage.setItem("hp-music", "off"); } catch (e) {}
+    } else {
+      musicMuted = false;
+      try { window.localStorage.removeItem("hp-music"); } catch (e) {}
+      startMusic(true);
+    }
+  });
+  /* 다른 앱으로 넘어가면 쉬었다가, 돌아오면 이어서 */
+  document.addEventListener("visibilitychange", function () {
+    if (!audio) { return; }
+    if (document.hidden) { audio.suspend(); } else if (musicOn) { audio.resume(); }
+  });
   /* 카톡공유: 카카오 공유로 친구·채팅방을 바로 고르게 한다 (그림 + 제목 + '초대장 보기' 버튼 카드).
      카카오 앱 키는 https://channy33.github.io 에서만 작동하는 공개용 JavaScript 키.
      카카오 SDK를 못 불러오면(예: Claude 아티팩트 화면) 폰 공유 창 → 링크 복사 순으로 물러난다. */
