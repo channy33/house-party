@@ -655,6 +655,7 @@
   }
   .foot { text-align: center; color: var(--muted); font-size: .84rem; display: grid; gap: .8rem; justify-items: center; }
   .foot p { margin: 0; }
+  .foot-share { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
   .foot .sign { font-family: var(--script); font-style: italic; font-size: 1.15rem; color: var(--ivory-soft); }
   .banner {
     border: 1px dashed var(--gold-line);
@@ -831,7 +832,10 @@
     </section>
     <footer class="foot">
       <div class="banner" id="mode-banner" hidden></div>
-      <button class="btn-ghost" type="button" id="copy-link">초대장 링크 복사</button>
+      <div class="foot-share">
+        <button class="btn-ghost" type="button" id="copy-link">초대장 링크 복사</button>
+        <button class="btn-ghost" type="button" id="foot-qr" aria-haspopup="dialog">QR로 공유하기</button>
+      </div>
       <p class="sign">See you on December 20th</p>
       <p>12월 20일 주일, 반가운 얼굴로 만나요.</p>
     </footer>
@@ -1458,6 +1462,7 @@
     copyLink(this.querySelector("span"), "복사했어요");
   });
   document.getElementById("share-qr").addEventListener("click", openQR);
+  document.getElementById("foot-qr").addEventListener("click", openQR);
   document.getElementById("qr-copy").addEventListener("click", function () {
     copyLink(this, "복사했어요");
   });
