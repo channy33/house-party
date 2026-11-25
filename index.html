@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="b846d8d9de">
+<meta name="build" content="9bd0eeb34f">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -1947,46 +1947,44 @@
     qrSheet.hidden = true;
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
   }
-  /* ───────── 배경 음악: 징글벨 (J. 피어폰트, 1857 — 저작권 만료) ─────────
-     음악 파일 없이 브라우저가 직접 연주한다. 통통 튀는 가락 + 쿵짝 베이스 + 썰매 방울.
+  /* ───────── 배경 음악: 천사들의 노래가 (프랑스 전래 성탄 찬송, Gloria — 저작권 만료) ─────────
+     음악 파일 없이 브라우저가 직접 연주한다. 맑은 가락 + 쿵짝 베이스 + 은은한 방울.
      폰은 사람이 화면을 한 번 누르기 전엔 소리를 낼 수 없어서, 첫 터치(어디든) 때 시작한다.
      오른쪽 '음악' 단추로 끄고 켤 수 있고, 끈 것은 이 기기에 기억해 둔다. */
   var musicBtn = document.getElementById("side-music");
   var musicLabel = document.getElementById("side-music-label");
   var audio = null, master = null, musicOn = false, musicTimer = 0, musicMuted = false, noiseBuf = null;
   try { musicMuted = window.localStorage.getItem("hp-music") === "off"; } catch (e) {}
-  /* [음, 길이(4분음표 단위)] — 4/4박자, 후렴 16마디 */
-  var MELODY = [
-    ["E5",1],["E5",1],["E5",2],
-    ["E5",1],["E5",1],["E5",2],
-    ["E5",1],["G5",1],["C5",1.5],["D5",0.5],
-    ["E5",4],
-    ["F5",1],["F5",1],["F5",1.5],["F5",0.5],
-    ["F5",1],["E5",1],["E5",1],["E5",0.5],["E5",0.5],
-    ["E5",1],["D5",1],["D5",1],["E5",1],
-    ["D5",2],["G5",2],
-    ["E5",1],["E5",1],["E5",2],
-    ["E5",1],["E5",1],["E5",2],
-    ["E5",1],["G5",1],["C5",1.5],["D5",0.5],
-    ["E5",4],
-    ["F5",1],["F5",1],["F5",1.5],["F5",0.5],
-    ["F5",1],["E5",1],["E5",1],["E5",0.5],["E5",0.5],
-    ["G5",1],["G5",1],["F5",1],["D5",1],
-    ["C5",4]
+  /* [음, 길이(4분음표 단위)] — 4/4박자, 바장조 */
+  var VERSE = [
+    ["A4",1],["A4",1],["A4",1],["C5",1],
+    ["C5",1.5],["Bb4",0.5],["A4",2],
+    ["A4",1],["G4",1],["A4",1],["C5",1],
+    ["A4",1.5],["G4",0.5],["F4",2]
   ];
-  /* 마디마다 화음 (근음, 5음, 화음) */
-  var CHORDS = ["C","C","C","C","F","C","D","G","C","C","C","C","F","C","G","C"];
+  /* 후렴 "Glo-ri-a, in ex-cel-sis De-o" */
+  var GLORIA = [
+    ["C5",2],["D5",0.5],["C5",0.5],["Bb4",0.5],["A4",0.5],
+    ["Bb4",2],["C5",0.5],["Bb4",0.5],["A4",0.5],["G4",0.5],
+    ["A4",2],["Bb4",0.5],["A4",0.5],["G4",0.5],["F4",0.5],
+    ["G4",1.5],["C4",0.5],["C4",2],
+    ["F4",1],["G4",1],["A4",1],["Bb4",1]
+  ];
+  var MELODY = [].concat(VERSE, VERSE, GLORIA, [["A4",2],["G4",2]], GLORIA, [["A4",2],["G4",2],["F4",4]]);
+  /* 반 마디(2박)마다 화음 */
+  var VERSE_CH = ["F","F","C","F","F","F","C","F"];
+  var GLORIA_CH = ["F","Bb","Bb","C","F","Bb","C","C","F","Bb"];
+  var CHORDS = [].concat(VERSE_CH, VERSE_CH, GLORIA_CH, ["F","C"], GLORIA_CH, ["F","C","F","F"]);
   var CHORD_NOTES = {
-    C: ["C3","G3",["E4","G4","C5"]],
     F: ["F2","C3",["A4","C5","F5"]],
-    G: ["G2","D3",["B4","D5","G5"]],
-    D: ["D3","A3",["F#4","A4","D5"]]
+    Bb: ["Bb2","F3",["Bb4","D5","F5"]],
+    C: ["C3","G3",["E4","G4","C5"]]
   };
-  var BEAT = 0.34;
+  var BEAT = 0.38;
   function freq(n) {
     var map = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-    var sharp = n[1] === "#" ? 1 : 0;
-    var semis = map[n[0]] + sharp + (parseInt(n.slice(1 + sharp), 10) + 1) * 12;
+    var acc = n[1] === "#" ? 1 : n[1] === "b" ? -1 : 0;
+    var semis = map[n[0]] + acc + (parseInt(n.slice(acc ? 2 : 1), 10) + 1) * 12;
     return 440 * Math.pow(2, (semis - 69) / 12);
   }
   function tone(f, at, dur, vol, type) {
@@ -2023,19 +2021,13 @@
       tone(f * 2, t, 0.18, 0.04, "sine");
       t += len;
     });
-    /* 반주: 박마다 쿵(근음)·짝(화음)을 번갈아, 반 박마다 방울 */
-    CHORDS.forEach(function (c, bar) {
-      var cn = CHORD_NOTES[c], bt = t0 + bar * 4 * BEAT;
-      for (var beat = 0; beat < 4; beat++) {
-        var at = bt + beat * BEAT;
-        if (beat % 2 === 0) {
-          tone(freq(beat === 0 ? cn[0] : cn[1]), at, 0.3, 0.16, "sine");
-        } else {
-          cn[2].forEach(function (n) { tone(freq(n) / 2, at, 0.16, 0.035, "triangle"); });
-        }
-        bell(at, 0.05);
-        bell(at + BEAT / 2, 0.028);
-      }
+    /* 반주: 반 마디마다 화음 — 첫 박은 쿵(근음), 둘째 박은 짝(화음), 박마다 은은한 방울 */
+    CHORDS.forEach(function (c, half) {
+      var cn = CHORD_NOTES[c], at = t0 + half * 2 * BEAT;
+      tone(freq(half % 2 === 0 ? cn[0] : cn[1]), at, 0.34, 0.16, "sine");
+      cn[2].forEach(function (n) { tone(freq(n) / 2, at + BEAT, 0.2, 0.035, "triangle"); });
+      bell(at, 0.03);
+      bell(at + BEAT, 0.02);
     });
     var total = MELODY.reduce(function (a, m) { return a + m[1]; }, 0) * BEAT;
     musicTimer = window.setTimeout(playOnce, (total + 1.4) * 1000);
