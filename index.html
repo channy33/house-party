@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="9bd0eeb34f">
+<meta name="build" content="d2f62d8433">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -483,6 +483,15 @@
   #side-music[aria-pressed="true"] svg { animation: musicBob 1.6s ease-in-out infinite; }
   @keyframes musicBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   @media (prefers-reduced-motion: reduce) { #side-music[aria-pressed="true"] svg { animation: none; } }
+  /* 배경 찬송 플레이어 */
+  .bgm { position: relative; z-index: 2; padding-block: 1rem 3rem; text-align: center; }
+  .bgm__title { margin: 0 0 .6rem; font-size: .82rem; color: var(--ivory-soft); }
+  .bgm__frame {
+    width: min(22rem, 100%); margin: 0 auto; aspect-ratio: 16 / 9;
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--gold-line); background: #0c1712;
+  }
+  .bgm__frame iframe, .bgm__frame > div { display: block; width: 100%; height: 100%; border: 0; }
+  .bgm__hint { margin: .55rem 0 0; font-size: .74rem; color: var(--muted); }
   /* 오시는 길 사진 */
   .way-link {
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
@@ -1110,6 +1119,12 @@
         처음으로 돌아가기
       </button>
     </footer>
+  </section>
+  <!-- 배경 찬송: 유튜브 플레이어 (유튜브 규정상 화면에 보이게 둔다) -->
+  <section class="bgm gutter" aria-labelledby="bgm-title">
+    <p class="bgm__title" id="bgm-title">♪ 배경 찬송 · 새찬송가 125장 천사들의 노래가</p>
+    <div class="bgm__frame"><div id="bgm-player"></div></div>
+    <p class="bgm__hint">화면을 처음 누르면 흘러나와요. 오른쪽 '음악' 단추로 끄고 켤 수 있어요.</p>
   </section>
 </div>
 <!-- QR 공유 창 -->
@@ -1947,120 +1962,50 @@
     qrSheet.hidden = true;
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
   }
-  /* ───────── 배경 음악: 천사들의 노래가 (프랑스 전래 성탄 찬송, Gloria — 저작권 만료) ─────────
-     음악 파일 없이 브라우저가 직접 연주한다. 맑은 가락 + 쿵짝 베이스 + 은은한 방울.
-     폰은 사람이 화면을 한 번 누르기 전엔 소리를 낼 수 없어서, 첫 터치(어디든) 때 시작한다.
+  /* ───────── 배경 음악: 새찬송가 125장 천사들의 노래가 (유튜브 반주 영상) ─────────
+     페이지 맨 아래에 유튜브 플레이어를 두고(가려서 틀면 안 됨), 화면을 처음 누를 때 재생한다.
+     폰은 사람이 누르기 전엔 소리를 막고, 아이폰은 플레이어를 직접 눌러야 할 때도 있다.
      오른쪽 '음악' 단추로 끄고 켤 수 있고, 끈 것은 이 기기에 기억해 둔다. */
+  var BGM_VIDEO = "vBTOV7rmou0";
   var musicBtn = document.getElementById("side-music");
   var musicLabel = document.getElementById("side-music-label");
-  var audio = null, master = null, musicOn = false, musicTimer = 0, musicMuted = false, noiseBuf = null;
+  var musicOn = false, musicMuted = false, wantPlay = false, yt = null, ytReady = false;
   try { musicMuted = window.localStorage.getItem("hp-music") === "off"; } catch (e) {}
-  /* [음, 길이(4분음표 단위)] — 4/4박자, 바장조 */
-  var VERSE = [
-    ["A4",1],["A4",1],["A4",1],["C5",1],
-    ["C5",1.5],["Bb4",0.5],["A4",2],
-    ["A4",1],["G4",1],["A4",1],["C5",1],
-    ["A4",1.5],["G4",0.5],["F4",2]
-  ];
-  /* 후렴 "Glo-ri-a, in ex-cel-sis De-o" */
-  var GLORIA = [
-    ["C5",2],["D5",0.5],["C5",0.5],["Bb4",0.5],["A4",0.5],
-    ["Bb4",2],["C5",0.5],["Bb4",0.5],["A4",0.5],["G4",0.5],
-    ["A4",2],["Bb4",0.5],["A4",0.5],["G4",0.5],["F4",0.5],
-    ["G4",1.5],["C4",0.5],["C4",2],
-    ["F4",1],["G4",1],["A4",1],["Bb4",1]
-  ];
-  var MELODY = [].concat(VERSE, VERSE, GLORIA, [["A4",2],["G4",2]], GLORIA, [["A4",2],["G4",2],["F4",4]]);
-  /* 반 마디(2박)마다 화음 */
-  var VERSE_CH = ["F","F","C","F","F","F","C","F"];
-  var GLORIA_CH = ["F","Bb","Bb","C","F","Bb","C","C","F","Bb"];
-  var CHORDS = [].concat(VERSE_CH, VERSE_CH, GLORIA_CH, ["F","C"], GLORIA_CH, ["F","C","F","F"]);
-  var CHORD_NOTES = {
-    F: ["F2","C3",["A4","C5","F5"]],
-    Bb: ["Bb2","F3",["Bb4","D5","F5"]],
-    C: ["C3","G3",["E4","G4","C5"]]
-  };
-  var BEAT = 0.38;
-  function freq(n) {
-    var map = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-    var acc = n[1] === "#" ? 1 : n[1] === "b" ? -1 : 0;
-    var semis = map[n[0]] + acc + (parseInt(n.slice(acc ? 2 : 1), 10) + 1) * 12;
-    return 440 * Math.pow(2, (semis - 69) / 12);
-  }
-  function tone(f, at, dur, vol, type) {
-    var o = audio.createOscillator(), g = audio.createGain();
-    o.type = type; o.frequency.value = f;
-    g.gain.setValueAtTime(0, at);
-    g.gain.linearRampToValueAtTime(vol, at + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0008, at + dur);
-    o.connect(g); g.connect(master);
-    o.start(at); o.stop(at + dur + 0.05);
-  }
-  /* 썰매 방울: 아주 짧은 '찰랑' 소리 */
-  function bell(at, vol) {
-    if (!noiseBuf) {
-      noiseBuf = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.12), audio.sampleRate);
-      var d = noiseBuf.getChannelData(0);
-      for (var i = 0; i < d.length; i++) { d[i] = Math.random() * 2 - 1; }
-    }
-    var src = audio.createBufferSource(), hp = audio.createBiquadFilter(), g = audio.createGain();
-    src.buffer = noiseBuf; hp.type = "highpass"; hp.frequency.value = 7000;
-    g.gain.setValueAtTime(vol, at);
-    g.gain.exponentialRampToValueAtTime(0.0008, at + 0.09);
-    src.connect(hp); hp.connect(g); g.connect(master);
-    src.start(at); src.stop(at + 0.12);
-  }
-  function playOnce() {
-    if (!musicOn) { return; }
-    var t0 = audio.currentTime + 0.15, t = t0;
-    /* 가락: 통통 튀는 실로폰 같은 소리 */
-    MELODY.forEach(function (m) {
-      var len = m[1] * BEAT, f = freq(m[0]);
-      var ring = Math.min(len * 0.9, 0.5) + 0.12;
-      tone(f, t, ring, 0.2, "triangle");
-      tone(f * 2, t, 0.18, 0.04, "sine");
-      t += len;
-    });
-    /* 반주: 반 마디마다 화음 — 첫 박은 쿵(근음), 둘째 박은 짝(화음), 박마다 은은한 방울 */
-    CHORDS.forEach(function (c, half) {
-      var cn = CHORD_NOTES[c], at = t0 + half * 2 * BEAT;
-      tone(freq(half % 2 === 0 ? cn[0] : cn[1]), at, 0.34, 0.16, "sine");
-      cn[2].forEach(function (n) { tone(freq(n) / 2, at + BEAT, 0.2, 0.035, "triangle"); });
-      bell(at, 0.03);
-      bell(at + BEAT, 0.02);
-    });
-    var total = MELODY.reduce(function (a, m) { return a + m[1]; }, 0) * BEAT;
-    musicTimer = window.setTimeout(playOnce, (total + 1.4) * 1000);
-  }
   function setMusicUI() {
     musicBtn.setAttribute("aria-pressed", musicOn ? "true" : "false");
     musicLabel.textContent = musicOn ? "음악 끄기" : "음악";
   }
-  function startMusic(fromButton) {
-    if (musicOn || (musicMuted && !fromButton)) { return; }
-    var AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) { return; }
-    try {
-      if (!audio) {
-        audio = new AC();
-        master = audio.createGain();
-        master.gain.value = 0.32;
-        /* 살짝 울리는 공간감: 짧은 메아리를 낮게 섞는다 */
-        var delay = audio.createDelay(), fb = audio.createGain(), wet = audio.createGain(), lp = audio.createBiquadFilter();
-        delay.delayTime.value = 0.33; fb.gain.value = 0.28; wet.gain.value = 0.35; lp.type = "lowpass"; lp.frequency.value = 2200;
-        master.connect(audio.destination);
-        master.connect(delay); delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(audio.destination);
+  window.onYouTubeIframeAPIReady = function () {
+    yt = new window.YT.Player("bgm-player", {
+      videoId: BGM_VIDEO,
+      playerVars: { playsinline: 1, rel: 0, loop: 1, playlist: BGM_VIDEO },
+      events: {
+        onReady: function () {
+          ytReady = true;
+          yt.setVolume(60);
+          if (wantPlay) { yt.playVideo(); }
+        },
+        onStateChange: function (e) {
+          musicOn = e.data === 1 || e.data === 3; /* 재생 중 · 불러오는 중 */
+          setMusicUI();
+        }
       }
-      if (audio.state === "suspended") { audio.resume(); }
-      musicOn = true;
-      setMusicUI();
-      playOnce();
-    } catch (e) { musicOn = false; }
+    });
+  };
+  (function () {
+    var tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  })();
+  function startMusic(fromButton) {
+    if (musicMuted && !fromButton) { return; }
+    wantPlay = true;
+    if (ytReady) { yt.playVideo(); }
   }
   function stopMusic() {
+    wantPlay = false;
+    if (ytReady) { yt.pauseVideo(); }
     musicOn = false;
-    window.clearTimeout(musicTimer);
-    if (audio) { audio.close(); audio = null; master = null; }
     setMusicUI();
   }
   musicBtn.addEventListener("click", function () {
@@ -2074,8 +2019,7 @@
       startMusic(true);
     }
   });
-  /* 처음부터 나오게: 화면 어디든 처음 누르는 순간 시작 (폰은 그 전엔 소리를 막는다).
-     '음악' 단추 자체를 누른 경우는 단추가 알아서 처리한다. */
+  /* 처음부터 나오게: 화면 어디든 처음 누르는 순간 재생 (폰은 그 전엔 소리를 막는다) */
   function firstTouch(event) {
     if (event.target && event.target.closest && event.target.closest("#side-music")) { return; }
     ["pointerup", "touchend", "keydown", "click"].forEach(function (type) {
@@ -2085,11 +2029,6 @@
   }
   ["pointerup", "touchend", "keydown", "click"].forEach(function (type) {
     document.addEventListener(type, firstTouch, true);
-  });
-  /* 다른 앱으로 넘어가면 쉬었다가, 돌아오면 이어서 */
-  document.addEventListener("visibilitychange", function () {
-    if (!audio) { return; }
-    if (document.hidden) { audio.suspend(); } else if (musicOn) { audio.resume(); }
   });
   /* 카톡공유: 카카오 공유로 친구·채팅방을 바로 고르게 한다 (그림 + 제목 + '초대장 보기' 버튼 카드).
      카카오 앱 키는 https://channy33.github.io 에서만 작동하는 공개용 JavaScript 키.
