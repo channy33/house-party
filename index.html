@@ -668,6 +668,16 @@
   .foot { text-align: center; color: var(--muted); font-size: .84rem; display: grid; gap: .8rem; justify-items: center; }
   .foot p { margin: 0; }
   .foot-share { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+  .to-top {
+    margin-top: .6rem;
+    display: inline-flex; align-items: center; gap: .4rem;
+    font: inherit; font-size: .86rem;
+    color: #e8c27a;
+    background: none; border: 0; padding: .5rem .8rem;
+    cursor: pointer;
+  }
+  .to-top svg { width: 15px; height: 15px; }
+  .to-top:hover, .to-top:focus-visible { color: #fff1cf; }
   .foot .sign { font-family: var(--script); font-style: italic; font-size: 1.15rem; color: var(--ivory-soft); }
   .banner {
     border: 1px dashed var(--gold-line);
@@ -850,6 +860,10 @@
       </div>
       <p class="sign">See you on December 20th</p>
       <p>12월 20일 주일, 반가운 얼굴로 만나요.</p>
+      <button class="to-top" type="button" id="to-top">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        처음으로 돌아가기
+      </button>
     </footer>
   </section>
 </div>
@@ -1487,6 +1501,10 @@
   });
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && !qrSheet.hidden) { closeQR(); }
+  });
+  /* 트리가 있는 첫 화면으로 (불은 켜진 그대로) */
+  document.getElementById("to-top").addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
   var copyBtn = document.getElementById("copy-link");
   copyBtn.addEventListener("click", function () {
