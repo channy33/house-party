@@ -74,7 +74,7 @@
     align-items: center;
     padding-block: 1.75rem 1.25rem;
   }
-  .sky { position: absolute; inset: 0; pointer-events: none; }
+  .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
   .sky--night {
     background:
       radial-gradient(60% 40% at 50% 58%, rgba(60, 70, 40, .22) 0%, rgba(0,0,0,0) 70%),
@@ -105,7 +105,9 @@
     100% { opacity: 0 }
   }
   /* 눈 */
-  .snow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  /* 눈은 화면에 고정된 층 하나로 — 첫 화면에서도, 아래 초대장을 읽는 동안에도 계속 내린다.
+     하늘보다 위(z 1), 글·트리·초대장 판보다 아래(z 2)에 깔린다. */
+  .snow { position: fixed; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
   .snow i {
     position: absolute;
     display: block;
@@ -120,7 +122,7 @@
     animation-timing-function: linear, ease-in-out;
     animation-iteration-count: infinite, infinite;
   }
-  .is-lit .snow i { background: #fff3dc; box-shadow: 0 0 6px rgba(255, 200, 120, .8); }
+  body.lit .snow i { background: #fff3dc; box-shadow: 0 0 6px rgba(255, 200, 120, .8); }
   @keyframes fall { from { top: -6%; } to { top: 106%; } }
   @keyframes drift {
     0%, 100% { transform: translateX(0) }
@@ -172,7 +174,7 @@
   /* ───────── 트리 ───────── */
   .tree-wrap {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     width: min(18rem, 74%);
     aspect-ratio: .74;
     margin-top: .9rem;
@@ -235,8 +237,10 @@
     .snow i, .hint { animation: none !important; }
   }
   /* ───────── 초대장 ───────── */
+  /* 배경은 body(짙은 초록)가 맡고 이 판은 투명하게 둔다 — 그래야 뒤로 눈이 비친다 */
   .invite {
-    background: linear-gradient(180deg, var(--green) 0%, var(--green-2) 100%);
+    position: relative;
+    z-index: 2;
     opacity: 0;
     transform: translateY(1.5rem);
     transition: opacity .9s ease, transform .9s cubic-bezier(.2,.8,.3,1);
@@ -422,35 +426,6 @@
   }
   .note { font-size: .85rem; color: var(--ivory-soft); margin: 0; }
   .note--warn { color: var(--ember); }
-  .tally { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .9rem; }
-  .pill {
-    font-size: .84rem;
-    padding: .28rem .75rem;
-    border-radius: 999px;
-    border: 1px solid var(--gold-line);
-    background: var(--field);
-    color: var(--ivory-soft);
-  }
-  .pill b { font-family: var(--display); font-weight: 700; color: var(--gold); }
-  .pill--no b { color: var(--muted); }
-  .guests { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
-  .guest {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: .6rem;
-    align-items: baseline;
-    padding: .6rem .8rem;
-    border: 1px solid var(--gold-line);
-    border-radius: 10px;
-    background: var(--field);
-    min-width: 0;
-  }
-  .guest__mark { color: var(--gold); font-size: .8rem; }
-  .guest__name { font-family: var(--display); font-weight: 700; font-size: .98rem; color: var(--ivory); }
-  .guest__meta { color: var(--muted); font-size: .82rem; }
-  .guest__word { grid-column: 2; color: var(--ivory-soft); font-size: .88rem; overflow-wrap: anywhere; min-width: 0; }
-  .guest--no .guest__mark { color: var(--muted); }
-  .guest--no .guest__name { color: var(--muted); font-weight: 400; }
   .empty { color: var(--muted); font-size: .9rem; margin: 0; }
   /* 방명록 */
   .panel-lede {
@@ -581,41 +556,42 @@
   }
 </style>
 <div class="sheet">
+  <!-- 눈: 화면 전체에 고정 -->
+  <div class="snow" aria-hidden="true">
+    <i style="left:4%;--t:12%;--s:4px;--o:.75;animation-duration:15s,6.1s;animation-delay:-2.1s,-0.4s"></i>
+    <i style="left:11%;--t:48%;--s:2px;--o:.5;animation-duration:19s,7.2s;animation-delay:-8.4s,-2.1s"></i>
+    <i style="left:17%;--t:76%;--s:6px;--o:.55;--b:1.2px;animation-duration:11s,5.4s;animation-delay:-4.6s,-3.3s"></i>
+    <i style="left:23%;--t:22%;--s:3px;--o:.65;animation-duration:17s,6.8s;animation-delay:-11.2s,-1.7s"></i>
+    <i style="left:29%;--t:62%;--s:2px;--o:.45;animation-duration:21s,8.1s;animation-delay:-6.3s,-0.9s"></i>
+    <i style="left:35%;--t:8%;--s:4px;--o:.75;animation-duration:14s,5.9s;animation-delay:-9.8s,-2.8s"></i>
+    <i style="left:41%;--t:88%;--s:3px;--o:.6;animation-duration:18s,7.5s;animation-delay:-3.2s,-1.1s"></i>
+    <i style="left:47%;--t:34%;--s:7px;--o:.45;--b:1.6px;animation-duration:10s,5.1s;animation-delay:-7.7s,-3.9s"></i>
+    <i style="left:53%;--t:70%;--s:2px;--o:.5;animation-duration:20s,7.8s;animation-delay:-13.4s,-0.5s"></i>
+    <i style="left:59%;--t:16%;--s:4px;--o:.75;animation-duration:16s,6.4s;animation-delay:-5.1s,-2.4s"></i>
+    <i style="left:65%;--t:54%;--s:3px;--o:.6;animation-duration:13.5s,5.7s;animation-delay:-10.6s,-1.9s"></i>
+    <i style="left:71%;--t:92%;--s:2px;--o:.45;animation-duration:22s,8.4s;animation-delay:-2.8s,-3.1s"></i>
+    <i style="left:77%;--t:28%;--s:6px;--o:.5;--b:1.2px;animation-duration:11.5s,6s;animation-delay:-12.1s,-0.8s"></i>
+    <i style="left:83%;--t:66%;--s:3px;--o:.6;animation-duration:18.5s,7.1s;animation-delay:-6.9s,-2.6s"></i>
+    <i style="left:89%;--t:4%;--s:4px;--o:.75;animation-duration:15.5s,6.6s;animation-delay:-1.4s,-1.5s"></i>
+    <i style="left:95%;--t:44%;--s:2px;--o:.5;animation-duration:19.5s,7.9s;animation-delay:-14.2s,-3.5s"></i>
+    <i style="left:8%;--t:84%;--s:3px;--o:.65;animation-duration:16.5s,6.2s;animation-delay:-5.7s,-2.2s"></i>
+    <i style="left:20%;--t:38%;--s:4px;--o:.7;animation-duration:12.5s,5.3s;animation-delay:-9.1s,-0.3s"></i>
+    <i style="left:32%;--t:96%;--s:2px;--o:.45;animation-duration:23s,8.7s;animation-delay:-3.9s,-1.8s"></i>
+    <i style="left:44%;--t:58%;--s:5px;--o:.55;--b:1px;animation-duration:12s,5.6s;animation-delay:-11.8s,-3.7s"></i>
+    <i style="left:56%;--t:2%;--s:3px;--o:.6;animation-duration:17.5s,7.4s;animation-delay:-7.2s,-1.3s"></i>
+    <i style="left:68%;--t:80%;--s:4px;--o:.7;animation-duration:15.2s,6.9s;animation-delay:-13.1s,-2.9s"></i>
+    <i style="left:80%;--t:50%;--s:2px;--o:.5;animation-duration:20.5s,8.2s;animation-delay:-4.3s,-0.7s"></i>
+    <i style="left:92%;--t:26%;--s:4px;--o:.7;animation-duration:14.2s,5.8s;animation-delay:-10.1s,-3.4s"></i>
+    <i style="left:2%;--t:68%;--s:3px;--o:.6;animation-duration:18.2s,7.6s;animation-delay:-6.1s,-2.0s"></i>
+    <i style="left:38%;--t:42%;--s:2px;--o:.5;animation-duration:21.5s,8.9s;animation-delay:-15.3s,-1.2s"></i>
+    <i style="left:62%;--t:18%;--s:7px;--o:.4;--b:1.8px;animation-duration:9.8s,5.2s;animation-delay:-8.7s,-3.8s"></i>
+    <i style="left:86%;--t:74%;--s:3px;--o:.65;animation-duration:16.8s,7s;animation-delay:-2.4s,-0.6s"></i>
+  </div>
   <!-- ───────── 첫 화면 ───────── -->
   <section class="stage gutter" id="stage" aria-label="초대장 첫 화면">
     <div class="sky sky--night" aria-hidden="true"></div>
     <div class="sky sky--warm" aria-hidden="true"></div>
     <div class="flash" aria-hidden="true"></div>
-    <div class="snow" aria-hidden="true">
-      <i style="left:4%;--t:12%;--s:4px;--o:.75;animation-duration:15s,6.1s;animation-delay:-2.1s,-0.4s"></i>
-      <i style="left:11%;--t:48%;--s:2px;--o:.5;animation-duration:19s,7.2s;animation-delay:-8.4s,-2.1s"></i>
-      <i style="left:17%;--t:76%;--s:6px;--o:.55;--b:1.2px;animation-duration:11s,5.4s;animation-delay:-4.6s,-3.3s"></i>
-      <i style="left:23%;--t:22%;--s:3px;--o:.65;animation-duration:17s,6.8s;animation-delay:-11.2s,-1.7s"></i>
-      <i style="left:29%;--t:62%;--s:2px;--o:.45;animation-duration:21s,8.1s;animation-delay:-6.3s,-0.9s"></i>
-      <i style="left:35%;--t:8%;--s:4px;--o:.75;animation-duration:14s,5.9s;animation-delay:-9.8s,-2.8s"></i>
-      <i style="left:41%;--t:88%;--s:3px;--o:.6;animation-duration:18s,7.5s;animation-delay:-3.2s,-1.1s"></i>
-      <i style="left:47%;--t:34%;--s:7px;--o:.45;--b:1.6px;animation-duration:10s,5.1s;animation-delay:-7.7s,-3.9s"></i>
-      <i style="left:53%;--t:70%;--s:2px;--o:.5;animation-duration:20s,7.8s;animation-delay:-13.4s,-0.5s"></i>
-      <i style="left:59%;--t:16%;--s:4px;--o:.75;animation-duration:16s,6.4s;animation-delay:-5.1s,-2.4s"></i>
-      <i style="left:65%;--t:54%;--s:3px;--o:.6;animation-duration:13.5s,5.7s;animation-delay:-10.6s,-1.9s"></i>
-      <i style="left:71%;--t:92%;--s:2px;--o:.45;animation-duration:22s,8.4s;animation-delay:-2.8s,-3.1s"></i>
-      <i style="left:77%;--t:28%;--s:6px;--o:.5;--b:1.2px;animation-duration:11.5s,6s;animation-delay:-12.1s,-0.8s"></i>
-      <i style="left:83%;--t:66%;--s:3px;--o:.6;animation-duration:18.5s,7.1s;animation-delay:-6.9s,-2.6s"></i>
-      <i style="left:89%;--t:4%;--s:4px;--o:.75;animation-duration:15.5s,6.6s;animation-delay:-1.4s,-1.5s"></i>
-      <i style="left:95%;--t:44%;--s:2px;--o:.5;animation-duration:19.5s,7.9s;animation-delay:-14.2s,-3.5s"></i>
-      <i style="left:8%;--t:84%;--s:3px;--o:.65;animation-duration:16.5s,6.2s;animation-delay:-5.7s,-2.2s"></i>
-      <i style="left:20%;--t:38%;--s:4px;--o:.7;animation-duration:12.5s,5.3s;animation-delay:-9.1s,-0.3s"></i>
-      <i style="left:32%;--t:96%;--s:2px;--o:.45;animation-duration:23s,8.7s;animation-delay:-3.9s,-1.8s"></i>
-      <i style="left:44%;--t:58%;--s:5px;--o:.55;--b:1px;animation-duration:12s,5.6s;animation-delay:-11.8s,-3.7s"></i>
-      <i style="left:56%;--t:2%;--s:3px;--o:.6;animation-duration:17.5s,7.4s;animation-delay:-7.2s,-1.3s"></i>
-      <i style="left:68%;--t:80%;--s:4px;--o:.7;animation-duration:15.2s,6.9s;animation-delay:-13.1s,-2.9s"></i>
-      <i style="left:80%;--t:50%;--s:2px;--o:.5;animation-duration:20.5s,8.2s;animation-delay:-4.3s,-0.7s"></i>
-      <i style="left:92%;--t:26%;--s:4px;--o:.7;animation-duration:14.2s,5.8s;animation-delay:-10.1s,-3.4s"></i>
-      <i style="left:2%;--t:68%;--s:3px;--o:.6;animation-duration:18.2s,7.6s;animation-delay:-6.1s,-2.0s"></i>
-      <i style="left:38%;--t:42%;--s:2px;--o:.5;animation-duration:21.5s,8.9s;animation-delay:-15.3s,-1.2s"></i>
-      <i style="left:62%;--t:18%;--s:7px;--o:.4;--b:1.8px;animation-duration:9.8s,5.2s;animation-delay:-8.7s,-3.8s"></i>
-      <i style="left:86%;--t:74%;--s:3px;--o:.65;animation-duration:16.8s,7s;animation-delay:-2.4s,-0.6s"></i>
-    </div>
     <p class="badge">축복교구 하우스파티</p>
     <h1 class="title">예수님 2026번째<br>생일에 초대합니다</h1>
     <p class="hint" id="hint">트리 꼭대기 십자가를 누르면 초대장을 볼 수 있어요</p>
@@ -712,15 +688,6 @@
         <button class="btn" type="submit" id="rsvp-submit">응답 보내기</button>
         <p class="note" id="rsvp-status" hidden></p>
       </form>
-    </section>
-    <section class="panel" aria-labelledby="guest-title">
-      <h2 class="section-title" id="guest-title">누가 오나요</h2>
-      <div class="tally">
-        <span class="pill">참석 <b id="count-yes">0</b>명</span>
-        <span class="pill pill--no">불참 <b id="count-no">0</b>명</span>
-      </div>
-      <ul class="guests" id="guest-list"></ul>
-      <p class="empty" id="guest-empty">아직 첫 응답을 기다리고 있어요. 제일 먼저 이름을 남겨 주세요.</p>
     </section>
     <section class="panel" aria-labelledby="gb-title">
       <h2 class="section-title" id="gb-title">생일 축하 방명록</h2>
@@ -1235,12 +1202,7 @@
   var yesEl      = document.getElementById("rsvp-yes");
   var submitEl   = document.getElementById("rsvp-submit");
   var statusEl   = document.getElementById("rsvp-status");
-  var listEl     = document.getElementById("guest-list");
-  var emptyEl    = document.getElementById("guest-empty");
-  var countYes   = document.getElementById("count-yes");
-  var countNo    = document.getElementById("count-no");
   var banner     = document.getElementById("mode-banner");
-  var entries = [];
   function load(key) {
     try {
       var raw = window.localStorage.getItem(key || STORE_KEY);
@@ -1249,39 +1211,6 @@
   }
   function save(list, key) {
     try { window.localStorage.setItem(key || STORE_KEY, JSON.stringify(list)); } catch (e) {}
-  }
-  function render() {
-    var yes = 0, no = 0;
-    listEl.textContent = "";
-    entries.forEach(function (entry) {
-      if (entry.attending) { yes += 1; } else { no += 1; }
-      var li = document.createElement("li");
-      li.className = "guest" + (entry.attending ? "" : " guest--no");
-      var mark = document.createElement("span");
-      mark.className = "guest__mark";
-      mark.textContent = entry.attending ? "✦" : "–";
-      li.appendChild(mark);
-      var head = document.createElement("span");
-      var name = document.createElement("span");
-      name.className = "guest__name";
-      name.textContent = entry.name;
-      head.appendChild(name);
-      var meta = document.createElement("span");
-      meta.className = "guest__meta";
-      meta.textContent = entry.attending ? "  참석" : "  불참";
-      head.appendChild(meta);
-      li.appendChild(head);
-      if (entry.word) {
-        var word = document.createElement("span");
-        word.className = "guest__word";
-        word.textContent = "“" + entry.word + "”";
-        li.appendChild(word);
-      }
-      listEl.appendChild(li);
-    });
-    countYes.textContent = String(yes);
-    countNo.textContent  = String(no);
-    emptyEl.hidden = entries.length > 0;
   }
   function setStatus(message, warn) {
     statusEl.textContent = message;
@@ -1307,20 +1236,12 @@
     };
     submitEl.disabled = true;
     sendEntry(entry).then(function () {
-      entries.unshift(entry);
-      if (!LIVE) { save(entries); }
-      render();
       form.reset();
       setStatus(entry.attending
         ? name + "님, 그날 뵐게요!"
         : name + "님, 마음 보내 주셔서 고마워요.", false);
       /* 방명록 이름 칸을 미리 채워 둔다 */
       if (!gbName.value.trim()) { gbName.value = name; }
-      if (LIVE) {
-        fetchEntries().then(function (list) {
-          if (Array.isArray(list)) { entries = list; render(); }
-        }, function () {});
-      }
     }).catch(function () {
       setStatus("저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.", true);
     }).then(function () {
@@ -1344,15 +1265,6 @@
       })
     }).then(function (res) {
       if (!res.ok) { throw new Error("save failed"); }
-    });
-  }
-  function fetchEntries() {
-    if (!LIVE) { return Promise.resolve(load()); }
-    return fetch(CONFIG.supabaseUrl + "/rest/v1/rsvp?select=name,attending,party,word,at&order=at.desc", {
-      headers: { "apikey": CONFIG.supabaseKey, "Authorization": "Bearer " + CONFIG.supabaseKey }
-    }).then(function (res) {
-      if (!res.ok) { throw new Error("load failed"); }
-      return res.json();
     });
   }
   var copyBtn = document.getElementById("copy-link");
@@ -1486,17 +1398,13 @@
   function fallBackToThisDevice() {
     LIVE = false;
     banner.hidden = false;
-    banner.textContent = "이 화면에서는 저장소에 연결할 수 없어, 적으신 응답과 방명록이 이 기기에만 남습니다. 실제 주소에 올리면 모두의 글이 한곳에 모입니다.";
-    entries = load();
+    banner.textContent = "이 화면에서는 저장소에 연결할 수 없어, 참석 응답은 저장되지 않고 방명록은 이 기기에만 남습니다. 실제 주소에서는 모두 한곳에 모입니다.";
     notes = load(GB_KEY);
-    render();
     renderNotes();
   }
   if (LIVE) {
-    Promise.all([fetchEntries(), fetchNotes()]).then(function (got) {
-      entries = Array.isArray(got[0]) ? got[0] : [];
-      notes   = Array.isArray(got[1]) ? got[1] : [];
-      render();
+    fetchNotes().then(function (list) {
+      notes = Array.isArray(list) ? list : [];
       renderNotes();
     }, fallBackToThisDevice);
   } else {
