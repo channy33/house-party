@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="6a004c7843">
+<meta name="build" content="98f3da8c36">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -1754,9 +1754,10 @@
   var KAKAO_KEY = "7cffa45fcd8ca9634ccb3e1c986cdf2a";
   function kakaoReady() {
     try {
-      if (!window.Kakao || !window.Kakao.Share) { return false; }
+      if (!window.Kakao || !window.Kakao.init) { return false; }
+      /* 카카오 SDK v2는 init 뒤에야 Kakao.Share 가 생긴다 */
       if (!window.Kakao.isInitialized()) { window.Kakao.init(KAKAO_KEY); }
-      return true;
+      return !!window.Kakao.Share;
     } catch (e) { return false; }
   }
   document.getElementById("side-kakao").addEventListener("click", function () {
