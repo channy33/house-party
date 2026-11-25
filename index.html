@@ -578,10 +578,12 @@
   var ctx    = canvas.getContext("2d");
   var spriteWarm  = makeGlowSprite(255, 226, 168);
   var spriteAmber = makeGlowSprite(255, 186, 96);
+  var spriteRed   = makeGlowSprite(255, 64, 48);
   var geo = null;          // 트리 크기와 위치
   var foliageDark = null;  // 불 꺼진 바늘잎
   var foliageLit  = null;  // 불 받은 바늘잎
   var lights = [];
+  var reds = [];           // 빨간 점전구
   var UNLIT = 0.14;
   var level = UNLIT, levelTarget = UNLIT; // 트리 전구 밝기: 처음엔 은은하게
   var cross = 0,    crossTarget = 0;      // 십자가 빛
@@ -617,7 +619,60 @@
     };
     buildFoliage();
     buildLights();
+    buildReds();
     return true;
+  }
+  /* 빨간 점전구: 몰리지 않게 줄마다 간격을 두고 고르게, 줄끼리는 엇갈리게 */
+  function buildReds() {
+    var rnd = seeded(777);
+    var span = geo.bottom - geo.top;
+    var gap = Math.max(22, geo.w * 0.095);
+    reds = [];
+    var rows = 10;
+    for (var r = 0; r < rows; r++) {
+      var t = 0.13 + (r / (rows - 1)) * 0.8;
+      var hw = halfWidth(t) * 0.86;
+      var n = Math.max(1, Math.round((hw * 2) / gap));
+      var step = (hw * 2) / n;
+      var shift = (r % 2) * step * 0.5;
+      for (var k = 0; k < n; k++) {
+        var x = geo.cx - hw + step * 0.5 + k * step + shift - (r % 2 ? step * 0.25 : 0);
+        if (Math.abs(x - geo.cx) > hw) { continue; }
+        reds.push({
+          x: x + (rnd() - 0.5) * step * 0.35,
+          y: geo.top + t * span + (rnd() - 0.5) * gap * 0.45,
+          r: 2.1 + rnd() * 0.8,
+          phase: rnd() * Math.PI * 2,
+          speed: 0.35 + rnd() * 0.6
+        });
+      }
+    }
+  }
+  function drawReds(now, litMix) {
+    var tsec = now / 1000;
+    var on = 0.4 + 0.6 * litMix;
+    for (var i = 0; i < reds.length; i++) {
+      var R = reds[i];
+      var pulse = reduceMotion ? 0.9 : 0.8 + 0.2 * Math.sin(tsec * R.speed + R.phase);
+      /* 붉은 번짐 */
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = 0.55 * on * pulse;
+      var s = R.r * (3.2 + 1.6 * litMix);
+      ctx.drawImage(spriteRed, R.x - s, R.y - s, s * 2, s * 2);
+      /* 전구 알 — 번짐만 있으면 빨간 안개처럼 보여서, 또렷한 알을 따로 찍는다 */
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 0.55 + 0.45 * on;
+      var g = ctx.createRadialGradient(R.x - R.r * 0.3, R.y - R.r * 0.35, 0, R.x, R.y, R.r);
+      g.addColorStop(0, "rgba(255," + Math.round(150 + 70 * on) + "," + Math.round(130 + 60 * on) + ",1)");
+      g.addColorStop(0.45, "rgba(" + Math.round(200 + 50 * on) + ",40,34,1)");
+      g.addColorStop(1, "rgba(" + Math.round(120 + 40 * on) + ",14,14,1)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(R.x, R.y, R.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
   }
   function treePath(x, inset) {
     var steps = 60;
@@ -782,8 +837,8 @@
     /* 트리 뒤로 퍼지는 빛 */
     var midY = geo.top + (geo.bottom - geo.top) * 0.58;
     var bloom = ctx.createRadialGradient(geo.cx, midY, 0, geo.cx, midY, geo.w * 0.95);
-    bloom.addColorStop(0, "rgba(255,200,120," + (0.03 + 0.36 * litMix) + ")");
-    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.12 * litMix) + ")");
+    bloom.addColorStop(0, "rgba(255,200,120," + (0.03 + 0.3 * litMix) + ")");
+    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.1 * litMix) + ")");
     bloom.addColorStop(1, "rgba(255,180,90,0)");
     ctx.fillStyle = bloom;
     ctx.fillRect(0, 0, geo.cw, geo.ch);
@@ -791,7 +846,7 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(foliageDark, 0, 0);
     /* 켜기 전엔 바늘잎이 거의 어둡고, 켜지면 노란빛 초록으로 살아난다 */
-    ctx.globalAlpha = 0.05 + 0.95 * Math.pow(litMix, 1.1);
+    ctx.globalAlpha = 0.05 + 0.85 * Math.pow(litMix, 1.1);
     ctx.drawImage(foliageLit, 0, 0);
     ctx.globalAlpha = 1;
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
@@ -799,7 +854,7 @@
     ctx.globalCompositeOperation = "lighter";
     var tsec = now / 1000;
     /* 빛은 더해지며 쌓이므로(lighter) 다 켜졌을 때 하얗게 타지 않게 번짐을 작게 둔다 */
-    var glow = 3.5 + 2.8 * litMix;
+    var glow = 3.2 + 2.2 * litMix;
     for (var i = 0; i < lights.length; i++) {
       var L = lights[i];
       var tw = reduceMotion ? 0.85 : 0.62 + 0.38 * Math.sin(tsec * L.speed + L.phase);
@@ -807,7 +862,7 @@
       var on = L.early
         ? 0.42 + 0.58 * litMix
         : Math.max(0, Math.min(1, (litMix - L.delay * 0.55) / 0.45));
-      var a = on * L.base * tw * 0.8;
+      var a = on * L.base * tw * 0.68;
       if (a < 0.015) { continue; }
       ctx.globalAlpha = a > 1 ? 1 : a;
       var s = L.r * glow;
@@ -815,6 +870,7 @@
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
+    drawReds(now, litMix);
     drawCross(now);
     window.requestAnimationFrame(frame);
   }
