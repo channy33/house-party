@@ -377,9 +377,10 @@
   .to-invite {
     position: fixed;
     z-index: 20;
+    --tx: -50%;
     left: 50%;
     bottom: max(14px, env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
+    transform: translateX(var(--tx));
     display: inline-flex;
     align-items: center;
     gap: .35rem;
@@ -401,8 +402,12 @@
   .to-invite.is-on { opacity: 1; animation: nudge 2.4s ease-in-out 1s infinite; }
   .to-invite svg { width: 14px; height: 14px; }
   @keyframes nudge {
-    0%, 100% { transform: translate(-50%, 0); }
-    50%      { transform: translate(-50%, 4px); }
+    0%, 100% { transform: translate(var(--tx), 0); }
+    50%      { transform: translate(var(--tx), 4px); }
+  }
+  /* 아주 짧은 화면에서는 가운데 '이사야 9장 6절'을 가리지 않게 오른쪽 아래 구석으로 */
+  @media (max-height: 640px) {
+    .to-invite { --tx: 0; left: auto; right: max(14px, env(safe-area-inset-right, 0px)); font-size: .8rem; padding: .4rem .85rem; }
   }
   @media (prefers-reduced-motion: reduce) { .to-invite.is-on { animation: none; } }
   /* ───────── 초대장 ───────── */
