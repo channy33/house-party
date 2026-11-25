@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
   :root {
     color-scheme: light;
@@ -30,33 +30,35 @@
 </head>
 <body>
 <style>
-  /* 눈 내리는 어두운 밤 → 십자가에 불이 켜지면 따뜻하게 환해지고 초대장이 열린다 */
+  /* 눈 내리는 밤, 전구가 은은하게 빛나는 트리 → 꼭대기 십자가를 누르면 온 화면이 따뜻하게 → 짙은 초록 초대장 */
   :root {
-    color-scheme: light;
-    --paper:      #f4efe4;
-    --paper-warm: #faf6ec;
-    --card:       #fffdf7;
-    --ink:        #3b3a33;
-    --ink-soft:   #85816f;
-    --olive:      #44603f;
-    --olive-soft: #6f8468;
-    --line:       rgba(68, 96, 63, .18);
-    --ember:      #e26a35;
-    --night:      #0a1430;
-    --display: "Nanum Myeongjo", "Batang", "Apple SD Gothic Neo", serif;
+    color-scheme: dark;
+    --night:      #070b16;
+    --ivory:      #f3ead6;
+    --ivory-soft: #cfc6b0;
+    --muted:      #9d9480;
+    --gold:       #e6c88c;
+    --gold-line:  rgba(230, 200, 140, .24);
+    --green:      #13261f;
+    --green-2:    #1a3329;
+    --panel:      rgba(255, 255, 255, .035);
+    --field:      rgba(0, 0, 0, .22);
+    --ember:      #f0a07a;
+    --display: "Nanum Myeongjo", "Batang", serif;
+    --script:  "Cormorant Garamond", "Times New Roman", serif;
     --body:    "Gowun Dodum", "Malgun Gothic", system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: var(--body);
-    color: var(--ink);
+    color: var(--ivory);
     background: var(--night);
     line-height: 1.7;
-    transition: background 2s ease;
+    transition: background 2.4s ease;
     -webkit-font-smoothing: antialiased;
   }
-  body.lit { background: var(--paper); }
+  body.lit { background: var(--green); }
   .sheet { max-width: 30rem; margin-inline: auto; }
   .gutter {
     padding-left:  max(16px, env(safe-area-inset-left, 0px));
@@ -70,247 +72,252 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: 2rem 1.4rem;
+    padding-block: 1.75rem 1.25rem;
   }
-  /* 하늘 두 장을 겹쳐 두고 밝은 쪽을 서서히 띄운다 */
   .sky { position: absolute; inset: 0; pointer-events: none; }
   .sky--night {
     background:
-      radial-gradient(70% 45% at 50% 12%, #1b2b56 0%, rgba(27,43,86,0) 70%),
-      linear-gradient(180deg, #0a1430 0%, #0d1a3a 55%, #111f44 100%);
+      radial-gradient(60% 40% at 50% 58%, rgba(60, 70, 40, .22) 0%, rgba(0,0,0,0) 70%),
+      radial-gradient(90% 55% at 50% 0%, #121a33 0%, rgba(18,26,51,0) 70%),
+      linear-gradient(180deg, #070b16 0%, #080c17 60%, #0a0d14 100%);
   }
   .sky--warm {
     opacity: 0;
-    transition: opacity 2s ease;
+    transition: opacity 2.4s ease;
     background:
-      radial-gradient(58% 38% at 50% 13%, #ffe4b0 0%, rgba(255,228,176,0) 72%),
-      linear-gradient(180deg, #f7e7c8 0%, #f3e2c4 48%, #efdcbb 100%);
+      radial-gradient(70% 50% at 50% 52%, rgba(255, 170, 80, .5) 0%, rgba(255,170,80,0) 74%),
+      radial-gradient(70% 34% at 50% 26%, rgba(255, 222, 160, .32) 0%, rgba(255,222,160,0) 70%),
+      linear-gradient(180deg, #2b1b0d 0%, #24170b 50%, #1b1a10 80%, #13261f 100%);
   }
   .is-lit .sky--warm { opacity: 1; }
+  /* 십자가가 켜지는 순간 한 번 번쩍 */
+  .flash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(55% 32% at 50% 30%, rgba(255, 240, 205, .85) 0%, rgba(255, 210, 140, .25) 45%, rgba(255,210,140,0) 75%);
+  }
+  .is-lit .flash { animation: flash 1.6s ease-out forwards; }
+  @keyframes flash {
+    0%   { opacity: 0 }
+    18%  { opacity: 1 }
+    100% { opacity: 0 }
+  }
   /* 눈 */
   .snow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
   .snow i {
     position: absolute;
     display: block;
     top: var(--t, 10%);
-    width: var(--s, 5px);
-    height: var(--s, 5px);
+    width: var(--s, 4px);
+    height: var(--s, 4px);
     border-radius: 50%;
     background: #ffffff;
-    opacity: var(--o, .75);
+    opacity: var(--o, .7);
+    filter: blur(var(--b, 0px));
     animation-name: fall, drift;
     animation-timing-function: linear, ease-in-out;
     animation-iteration-count: infinite, infinite;
   }
-  .is-lit .snow i { box-shadow: 0 0 7px rgba(255, 196, 112, .9); }
-  @keyframes fall {
-    from { top: -8%; }
-    to   { top: 108%; }
-  }
+  .is-lit .snow i { background: #fff3dc; box-shadow: 0 0 6px rgba(255, 200, 120, .8); }
+  @keyframes fall { from { top: -6%; } to { top: 106%; } }
   @keyframes drift {
     0%, 100% { transform: translateX(0) }
-    50%      { transform: translateX(15px) }
+    50%      { transform: translateX(14px) }
   }
-  /* 글 */
   .badge {
     position: relative;
-    font-family: var(--display);
-    font-size: 1.05rem;
-    letter-spacing: .1em;
-    color: #b9c6e8;
-    border: 1px solid rgba(185, 198, 232, .38);
+    z-index: 2;
+    font-family: var(--script);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.2rem;
+    letter-spacing: .14em;
+    color: var(--ivory-soft);
+    border: 1px solid rgba(243, 234, 214, .3);
     border-radius: 50%;
-    padding: .4rem 1.5rem;
+    padding: .3rem 1.45rem;
     margin: 0;
-    transition: color 2s ease, border-color 2s ease;
   }
-  .is-lit .badge { color: var(--olive-soft); border-color: var(--line); }
   .title {
     position: relative;
+    z-index: 2;
     font-family: var(--display);
     font-weight: 700;
-    color: #eef3ff;
-    font-size: clamp(1.45rem, 6.6vw, 1.95rem);
+    color: var(--ivory);
+    font-size: clamp(1.45rem, 6.6vw, 1.9rem);
     line-height: 1.5;
     letter-spacing: -.01em;
     text-align: center;
     text-wrap: balance;
-    margin: 1rem 0 0;
-    transition: color 2s ease, text-shadow 2s ease;
-  }
-  .is-lit .title { color: var(--olive); }
-  .scripture {
-    position: relative;
     margin: .9rem 0 0;
-    max-width: 23rem;
-    display: grid;
-    gap: .35rem;
+    transition: text-shadow 2.4s ease;
+  }
+  .is-lit .title { text-shadow: 0 0 22px rgba(255, 196, 112, .45); }
+  .hint {
+    position: relative;
+    z-index: 2;
+    margin: .8rem 0 0;
+    font-size: .9rem;
+    letter-spacing: .02em;
+    color: var(--ivory-soft);
     text-align: center;
+    animation: hintGlow 2.8s ease-in-out infinite;
+    transition: opacity .6s ease;
   }
-  .scripture p {
-    margin: 0;
-    font-family: var(--display);
-    font-size: .82rem;
-    line-height: 1.8;
-    color: #9fb0d6;
-    word-break: keep-all;
-    transition: color 2s ease;
-  }
-  .scripture .ko { color: #d5def5; }
-  .scripture .ref { font-size: .78rem; letter-spacing: .1em; color: #8c9cc2; }
-  .scripture .en {
-    font-size: .67rem;
-    line-height: 1.75;
-    letter-spacing: .012em;
-    color: #7d8cb0;
-    margin-top: .1rem;
-  }
-  .is-lit .scripture .ko  { color: var(--olive); }
-  .is-lit .scripture .ref { color: var(--ink-soft); }
-  .is-lit .scripture .en  { color: #a39e8c; }
+  @keyframes hintGlow { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+  .is-lit .hint { animation: none; opacity: 0; }
   /* ───────── 트리 ───────── */
   .tree-wrap {
     position: relative;
-    width: min(15rem, 62%);
-    margin-top: auto;
+    z-index: 1;
+    width: min(18rem, 74%);
+    aspect-ratio: .74;
+    margin-top: .9rem;
   }
-  .tree { display: block; width: 100%; height: auto; overflow: visible; }
-  .tree-body  { fill: #12291c; transition: fill 2s ease; }
-  .tree-body2 { fill: #0d2016; transition: fill 2s ease; }
-  .tree-trunk { fill: #2a1f16; transition: fill 2s ease; }
-  .tree-snow  { fill: #c9d6f0; transition: fill 2s ease; }
-  .is-lit .tree-body  { fill: #27512f; }
-  .is-lit .tree-body2 { fill: #1d4126; }
-  .is-lit .tree-trunk { fill: #4a3626; }
-  .is-lit .tree-snow  { fill: #fff4de; }
-  .bulb { opacity: 0; transition: opacity 1.4s ease .5s; }
-  .is-lit .bulb { opacity: 1; animation: twinkle 3.4s ease-in-out infinite; }
-  @keyframes twinkle { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
-  .cross-mark { fill: #59678c; transition: fill 1.1s ease; }
-  .is-lit .cross-mark {
-    fill: #ffe3a0;
-    filter: drop-shadow(0 0 4px #fff1c9) drop-shadow(0 0 12px rgba(255, 196, 106, .9));
-  }
-  .cross-halo { opacity: 0; transition: opacity 1.6s ease; }
-  .is-lit .cross-halo { opacity: 1; }
-  /* 누르라는 신호 — 켜지기 전에만 숨 쉬듯 */
-  .cross-ring {
-    fill: none;
-    stroke: #8fa3d6;
-    stroke-width: 2;
-    opacity: .5;
-    animation: breathe 2.6s ease-in-out infinite;
-  }
-  .is-lit .cross-ring { opacity: 0; animation: none; }
-  @keyframes breathe {
-    0%, 100% { opacity: .18; transform: scale(1) }
-    50%      { opacity: .55; transform: scale(1.1) }
+  /* 빛이 트리 밖으로 번질 자리를 남기려고 캔버스를 트리보다 크게 깐다 */
+  .tree-canvas {
+    position: absolute;
+    left: -25%;
+    right: -25%;
+    top: -18%;
+    bottom: -3%;
+    width: 150%;
+    height: 121%;
+    pointer-events: none;
   }
   .cross-btn {
     position: absolute;
+    z-index: 3;
     left: 50%;
-    top: -2%;
+    top: calc(8.3% - 42px);
     transform: translateX(-50%);
-    width: 42%;
-    min-width: 62px;
-    aspect-ratio: 1;
+    width: 84px;
+    height: 84px;
     padding: 0;
     border: 0;
     border-radius: 50%;
     background: none;
     cursor: pointer;
   }
-  .cross-btn:focus-visible { outline: 2px solid #ffd98a; outline-offset: 2px; }
+  .cross-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: -6px; }
   .is-lit .cross-btn { pointer-events: none; }
-  .hint {
+  .scripture {
     position: relative;
-    margin: 1rem 0 0;
-    font-size: .95rem;
-    color: #a8b6da;
+    z-index: 2;
+    margin: 1.4rem 0 0;
+    max-width: 23rem;
+    display: grid;
+    gap: .3rem;
     text-align: center;
-    transition: color 2s ease, opacity .5s ease;
   }
-  .is-lit .hint { opacity: 0; }
+  .scripture p {
+    margin: 0;
+    font-family: var(--display);
+    font-size: .8rem;
+    line-height: 1.8;
+    color: #d8cfbb;
+    word-break: keep-all;
+  }
+  .scripture .ref { font-size: .76rem; letter-spacing: .1em; color: var(--muted); }
+  .scripture .en {
+    font-family: var(--script);
+    font-style: italic;
+    font-size: .86rem;
+    line-height: 1.55;
+    color: #a89f8a;
+    margin-top: .15rem;
+  }
   .skip {
     position: relative;
+    z-index: 2;
     appearance: none;
     border: 0;
     background: none;
     font: inherit;
-    font-size: .82rem;
-    color: #7d8cb0;
+    font-size: .8rem;
+    color: var(--muted);
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
     padding: .3rem .5rem;
-    margin-top: .3rem;
+    margin-top: .5rem;
   }
-  .is-lit .skip { display: none; }
+  .is-lit .skip { visibility: hidden; }
   @media (prefers-reduced-motion: reduce) {
-    .snow i, .cross-ring, .is-lit .bulb { animation: none !important; }
+    .snow i, .hint { animation: none !important; }
   }
   /* ───────── 초대장 ───────── */
   .invite {
+    background: linear-gradient(180deg, var(--green) 0%, var(--green-2) 100%);
     opacity: 0;
     transform: translateY(1.5rem);
-    transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.3,1);
-    padding-block: 2.75rem 3.5rem;
+    transition: opacity .9s ease, transform .9s cubic-bezier(.2,.8,.3,1);
+    padding-block: 3rem 3.5rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.9rem;
   }
   .invite.in { opacity: 1; transform: none; }
+  .invite-head { text-align: center; display: grid; justify-items: center; gap: .9rem; }
+  .spark { width: 100%; max-width: 20rem; height: auto; overflow: visible; }
+  .invite-script {
+    font-family: var(--script);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(2.3rem, 11vw, 2.9rem);
+    line-height: 1.05;
+    color: var(--ivory);
+    margin: 0;
+  }
   .intro {
     margin: 0;
-    text-align: center;
     font-family: var(--display);
-    font-size: 1.02rem;
+    font-size: .98rem;
     line-height: 1.95;
-    color: var(--olive);
+    color: var(--ivory-soft);
     text-wrap: balance;
     word-break: keep-all;
   }
   .panel {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid var(--gold-line);
+    border-radius: 14px;
     padding: 1.4rem 1.25rem;
   }
   .section-title {
     font-family: var(--display);
     font-weight: 700;
-    color: var(--olive);
-    font-size: 1.15rem;
+    color: var(--gold);
+    font-size: 1.08rem;
+    letter-spacing: .02em;
     margin: 0 0 1rem;
   }
   .facts { display: grid; gap: 1.1rem; margin: 0; }
   .fact { display: grid; grid-template-columns: 3.1rem 1fr; gap: .9rem; align-items: start; }
-  .fact dt {
-    font-family: var(--display);
-    font-size: .88rem;
-    color: var(--olive-soft);
-    padding-top: .2rem;
-  }
+  .fact dt { font-family: var(--display); font-size: .86rem; color: var(--muted); padding-top: .2rem; }
   .fact dd { margin: 0; min-width: 0; }
-  .fact strong { display: block; font-size: 1.05rem; font-weight: 400; }
-  .fact small { display: block; color: var(--ink-soft); font-size: .86rem; margin-top: .1rem; }
-  .fact a { color: var(--olive); text-underline-offset: 3px; }
+  .fact strong { display: block; font-size: 1.04rem; font-weight: 400; color: var(--ivory); }
+  .fact small { display: block; color: var(--muted); font-size: .86rem; margin-top: .1rem; }
+  .fact a { color: var(--gold); text-underline-offset: 3px; }
   .form { display: grid; gap: 1.1rem; }
   .field { display: grid; gap: .4rem; }
-  .field > label, .legend { font-size: .85rem; color: var(--ink-soft); }
+  .field > label, .legend { font-size: .84rem; color: var(--muted); }
   input[type="text"], textarea, select {
     width: 100%;
     font: inherit;
     font-size: 1rem;
-    color: var(--ink);
-    background: var(--paper-warm);
-    border: 1px solid var(--line);
-    border-radius: 11px;
+    color: var(--ivory);
+    background: var(--field);
+    border: 1px solid var(--gold-line);
+    border-radius: 10px;
     padding: .7rem .85rem;
   }
+  select option { background: var(--green); color: var(--ivory); }
   textarea { resize: vertical; min-height: 3.4rem; }
-  input::placeholder, textarea::placeholder { color: #a8a494; }
-  :focus-visible { outline: 2px solid var(--olive-soft); outline-offset: 2px; }
+  input::placeholder, textarea::placeholder { color: #7f7b69; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .4rem; }
   .choices { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
   .choice { position: relative; }
@@ -319,24 +326,25 @@
     display: block;
     text-align: center;
     padding: .8rem .5rem;
-    border: 1px solid var(--line);
-    border-radius: 11px;
-    background: var(--paper-warm);
+    border: 1px solid var(--gold-line);
+    border-radius: 10px;
+    background: var(--field);
+    color: var(--ivory-soft);
     transition: background .15s, border-color .15s, color .15s;
   }
   .choice input:checked + span {
-    background: #eef2e8;
-    border-color: var(--olive-soft);
-    color: var(--olive);
+    background: rgba(230, 200, 140, .12);
+    border-color: var(--gold);
+    color: var(--gold);
   }
-  .choice input:focus-visible + span { outline: 2px solid var(--olive-soft); outline-offset: 2px; }
+  .choice input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
   .btn {
     font: inherit;
     font-family: var(--display);
     font-weight: 700;
-    font-size: 1.02rem;
-    color: var(--card);
-    background: var(--olive);
+    font-size: 1rem;
+    color: var(--green);
+    background: var(--gold);
     border: 0;
     border-radius: 999px;
     padding: .85rem 1.2rem;
@@ -345,53 +353,57 @@
   .btn:disabled { opacity: .5; cursor: default; }
   .btn-ghost {
     font: inherit;
-    font-size: .9rem;
-    color: var(--ink-soft);
+    font-size: .88rem;
+    color: var(--ivory-soft);
     background: none;
-    border: 1px solid var(--line);
+    border: 1px solid var(--gold-line);
     border-radius: 999px;
     padding: .55rem 1.1rem;
     cursor: pointer;
     max-width: 100%;
     overflow-wrap: anywhere;
   }
-  .note { font-size: .85rem; color: var(--ink-soft); margin: 0; }
+  .note { font-size: .85rem; color: var(--ivory-soft); margin: 0; }
   .note--warn { color: var(--ember); }
   .tally { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .9rem; }
   .pill {
-    font-size: .85rem;
+    font-size: .84rem;
     padding: .28rem .75rem;
     border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--paper-warm);
+    border: 1px solid var(--gold-line);
+    background: var(--field);
+    color: var(--ivory-soft);
   }
-  .pill b { font-family: var(--display); font-weight: 700; color: var(--olive); }
-  .pill--no b { color: var(--ink-soft); }
+  .pill b { font-family: var(--display); font-weight: 700; color: var(--gold); }
+  .pill--no b { color: var(--muted); }
   .guests { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
   .guest {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: .55rem;
+    gap: .6rem;
     align-items: baseline;
     padding: .6rem .8rem;
-    border: 1px solid var(--line);
-    border-radius: 11px;
-    background: var(--paper-warm);
+    border: 1px solid var(--gold-line);
+    border-radius: 10px;
+    background: var(--field);
     min-width: 0;
   }
-  .guest__name { font-family: var(--display); font-weight: 700; font-size: .98rem; }
-  .guest__meta { color: var(--ink-soft); font-size: .82rem; }
-  .guest__word { grid-column: 2; color: var(--ink-soft); font-size: .88rem; overflow-wrap: anywhere; min-width: 0; }
-  .guest--no .guest__name { color: var(--ink-soft); font-weight: 400; }
-  .empty { color: var(--ink-soft); font-size: .92rem; margin: 0; }
-  .foot { text-align: center; color: var(--ink-soft); font-size: .84rem; display: grid; gap: .8rem; justify-items: center; }
+  .guest__mark { color: var(--gold); font-size: .8rem; }
+  .guest__name { font-family: var(--display); font-weight: 700; font-size: .98rem; color: var(--ivory); }
+  .guest__meta { color: var(--muted); font-size: .82rem; }
+  .guest__word { grid-column: 2; color: var(--ivory-soft); font-size: .88rem; overflow-wrap: anywhere; min-width: 0; }
+  .guest--no .guest__mark { color: var(--muted); }
+  .guest--no .guest__name { color: var(--muted); font-weight: 400; }
+  .empty { color: var(--muted); font-size: .9rem; margin: 0; }
+  .foot { text-align: center; color: var(--muted); font-size: .84rem; display: grid; gap: .8rem; justify-items: center; }
   .foot p { margin: 0; }
+  .foot .sign { font-family: var(--script); font-style: italic; font-size: 1.15rem; color: var(--ivory-soft); }
   .banner {
-    border: 1px dashed var(--line);
-    border-radius: 11px;
+    border: 1px dashed var(--gold-line);
+    border-radius: 10px;
     padding: .65rem .85rem;
     font-size: .82rem;
-    color: var(--ink-soft);
+    color: var(--muted);
     text-align: center;
   }
 </style>
@@ -400,129 +412,62 @@
   <section class="stage gutter" id="stage" aria-label="초대장 첫 화면">
     <div class="sky sky--night" aria-hidden="true"></div>
     <div class="sky sky--warm" aria-hidden="true"></div>
+    <div class="flash" aria-hidden="true"></div>
     <div class="snow" aria-hidden="true">
-      <i style="left:4%;--t:12%;--s:5px;--o:.8;animation-duration:15s,6.1s;animation-delay:-2.1s,-0.4s"></i>
-      <i style="left:11%;--t:48%;--s:3px;--o:.6;animation-duration:19s,7.2s;animation-delay:-8.4s,-2.1s"></i>
-      <i style="left:17%;--t:76%;--s:6px;--o:.85;animation-duration:13s,5.4s;animation-delay:-4.6s,-3.3s"></i>
-      <i style="left:23%;--t:22%;--s:4px;--o:.7;animation-duration:17s,6.8s;animation-delay:-11.2s,-1.7s"></i>
-      <i style="left:29%;--t:62%;--s:3px;--o:.55;animation-duration:21s,8.1s;animation-delay:-6.3s,-0.9s"></i>
-      <i style="left:35%;--t:8%;--s:5px;--o:.8;animation-duration:14s,5.9s;animation-delay:-9.8s,-2.8s"></i>
-      <i style="left:41%;--t:88%;--s:4px;--o:.7;animation-duration:18s,7.5s;animation-delay:-3.2s,-1.1s"></i>
-      <i style="left:47%;--t:34%;--s:6px;--o:.9;animation-duration:12s,5.1s;animation-delay:-7.7s,-3.9s"></i>
-      <i style="left:53%;--t:70%;--s:3px;--o:.6;animation-duration:20s,7.8s;animation-delay:-13.4s,-0.5s"></i>
-      <i style="left:59%;--t:16%;--s:5px;--o:.8;animation-duration:16s,6.4s;animation-delay:-5.1s,-2.4s"></i>
-      <i style="left:65%;--t:54%;--s:4px;--o:.7;animation-duration:13.5s,5.7s;animation-delay:-10.6s,-1.9s"></i>
-      <i style="left:71%;--t:92%;--s:3px;--o:.55;animation-duration:22s,8.4s;animation-delay:-2.8s,-3.1s"></i>
-      <i style="left:77%;--t:28%;--s:6px;--o:.85;animation-duration:14.5s,6s;animation-delay:-12.1s,-0.8s"></i>
-      <i style="left:83%;--t:66%;--s:4px;--o:.7;animation-duration:18.5s,7.1s;animation-delay:-6.9s,-2.6s"></i>
-      <i style="left:89%;--t:4%;--s:5px;--o:.8;animation-duration:15.5s,6.6s;animation-delay:-1.4s,-1.5s"></i>
-      <i style="left:95%;--t:44%;--s:3px;--o:.6;animation-duration:19.5s,7.9s;animation-delay:-14.2s,-3.5s"></i>
-      <i style="left:8%;--t:84%;--s:4px;--o:.75;animation-duration:16.5s,6.2s;animation-delay:-5.7s,-2.2s"></i>
-      <i style="left:20%;--t:38%;--s:5px;--o:.8;animation-duration:12.5s,5.3s;animation-delay:-9.1s,-0.3s"></i>
-      <i style="left:32%;--t:96%;--s:3px;--o:.55;animation-duration:23s,8.7s;animation-delay:-3.9s,-1.8s"></i>
-      <i style="left:44%;--t:58%;--s:6px;--o:.85;animation-duration:13.8s,5.6s;animation-delay:-11.8s,-3.7s"></i>
-      <i style="left:56%;--t:2%;--s:4px;--o:.7;animation-duration:17.5s,7.4s;animation-delay:-7.2s,-1.3s"></i>
-      <i style="left:68%;--t:80%;--s:5px;--o:.8;animation-duration:15.2s,6.9s;animation-delay:-13.1s,-2.9s"></i>
-      <i style="left:80%;--t:50%;--s:3px;--o:.6;animation-duration:20.5s,8.2s;animation-delay:-4.3s,-0.7s"></i>
-      <i style="left:92%;--t:26%;--s:5px;--o:.8;animation-duration:14.2s,5.8s;animation-delay:-10.1s,-3.4s"></i>
-      <i style="left:2%;--t:68%;--s:4px;--o:.7;animation-duration:18.2s,7.6s;animation-delay:-6.1s,-2.0s"></i>
-      <i style="left:38%;--t:42%;--s:3px;--o:.6;animation-duration:21.5s,8.9s;animation-delay:-15.3s,-1.2s"></i>
-      <i style="left:62%;--t:18%;--s:6px;--o:.9;animation-duration:12.8s,5.2s;animation-delay:-8.7s,-3.8s"></i>
-      <i style="left:86%;--t:74%;--s:4px;--o:.75;animation-duration:16.8s,7s;animation-delay:-2.4s,-0.6s"></i>
+      <i style="left:4%;--t:12%;--s:4px;--o:.75;animation-duration:15s,6.1s;animation-delay:-2.1s,-0.4s"></i>
+      <i style="left:11%;--t:48%;--s:2px;--o:.5;animation-duration:19s,7.2s;animation-delay:-8.4s,-2.1s"></i>
+      <i style="left:17%;--t:76%;--s:6px;--o:.55;--b:1.2px;animation-duration:11s,5.4s;animation-delay:-4.6s,-3.3s"></i>
+      <i style="left:23%;--t:22%;--s:3px;--o:.65;animation-duration:17s,6.8s;animation-delay:-11.2s,-1.7s"></i>
+      <i style="left:29%;--t:62%;--s:2px;--o:.45;animation-duration:21s,8.1s;animation-delay:-6.3s,-0.9s"></i>
+      <i style="left:35%;--t:8%;--s:4px;--o:.75;animation-duration:14s,5.9s;animation-delay:-9.8s,-2.8s"></i>
+      <i style="left:41%;--t:88%;--s:3px;--o:.6;animation-duration:18s,7.5s;animation-delay:-3.2s,-1.1s"></i>
+      <i style="left:47%;--t:34%;--s:7px;--o:.45;--b:1.6px;animation-duration:10s,5.1s;animation-delay:-7.7s,-3.9s"></i>
+      <i style="left:53%;--t:70%;--s:2px;--o:.5;animation-duration:20s,7.8s;animation-delay:-13.4s,-0.5s"></i>
+      <i style="left:59%;--t:16%;--s:4px;--o:.75;animation-duration:16s,6.4s;animation-delay:-5.1s,-2.4s"></i>
+      <i style="left:65%;--t:54%;--s:3px;--o:.6;animation-duration:13.5s,5.7s;animation-delay:-10.6s,-1.9s"></i>
+      <i style="left:71%;--t:92%;--s:2px;--o:.45;animation-duration:22s,8.4s;animation-delay:-2.8s,-3.1s"></i>
+      <i style="left:77%;--t:28%;--s:6px;--o:.5;--b:1.2px;animation-duration:11.5s,6s;animation-delay:-12.1s,-0.8s"></i>
+      <i style="left:83%;--t:66%;--s:3px;--o:.6;animation-duration:18.5s,7.1s;animation-delay:-6.9s,-2.6s"></i>
+      <i style="left:89%;--t:4%;--s:4px;--o:.75;animation-duration:15.5s,6.6s;animation-delay:-1.4s,-1.5s"></i>
+      <i style="left:95%;--t:44%;--s:2px;--o:.5;animation-duration:19.5s,7.9s;animation-delay:-14.2s,-3.5s"></i>
+      <i style="left:8%;--t:84%;--s:3px;--o:.65;animation-duration:16.5s,6.2s;animation-delay:-5.7s,-2.2s"></i>
+      <i style="left:20%;--t:38%;--s:4px;--o:.7;animation-duration:12.5s,5.3s;animation-delay:-9.1s,-0.3s"></i>
+      <i style="left:32%;--t:96%;--s:2px;--o:.45;animation-duration:23s,8.7s;animation-delay:-3.9s,-1.8s"></i>
+      <i style="left:44%;--t:58%;--s:5px;--o:.55;--b:1px;animation-duration:12s,5.6s;animation-delay:-11.8s,-3.7s"></i>
+      <i style="left:56%;--t:2%;--s:3px;--o:.6;animation-duration:17.5s,7.4s;animation-delay:-7.2s,-1.3s"></i>
+      <i style="left:68%;--t:80%;--s:4px;--o:.7;animation-duration:15.2s,6.9s;animation-delay:-13.1s,-2.9s"></i>
+      <i style="left:80%;--t:50%;--s:2px;--o:.5;animation-duration:20.5s,8.2s;animation-delay:-4.3s,-0.7s"></i>
+      <i style="left:92%;--t:26%;--s:4px;--o:.7;animation-duration:14.2s,5.8s;animation-delay:-10.1s,-3.4s"></i>
+      <i style="left:2%;--t:68%;--s:3px;--o:.6;animation-duration:18.2s,7.6s;animation-delay:-6.1s,-2.0s"></i>
+      <i style="left:38%;--t:42%;--s:2px;--o:.5;animation-duration:21.5s,8.9s;animation-delay:-15.3s,-1.2s"></i>
+      <i style="left:62%;--t:18%;--s:7px;--o:.4;--b:1.8px;animation-duration:9.8s,5.2s;animation-delay:-8.7s,-3.8s"></i>
+      <i style="left:86%;--t:74%;--s:3px;--o:.65;animation-duration:16.8s,7s;animation-delay:-2.4s,-0.6s"></i>
     </div>
-    <p class="badge">12.20</p>
+    <p class="badge">12 . 20</p>
     <h1 class="title">예수님 2026번째<br>생일에 초대합니다</h1>
+    <p class="hint" id="hint">트리 꼭대기 십자가를 눌러 주세요</p>
+    <div class="tree-wrap" id="tree-wrap">
+      <canvas class="tree-canvas" id="tree-canvas" role="img" aria-label="작은 전구가 촘촘히 빛나는 성탄 트리와 꼭대기의 십자가"></canvas>
+      <button class="cross-btn" id="cross" type="button" aria-label="십자가에 불 켜기"></button>
+    </div>
     <blockquote class="scripture">
       <p class="ko">이는 한 아기가 우리에게 났고 한 아들을 우리에게 주신 바 되었는데 그의 어깨에는 정사를 메었고 그의 이름은 기묘자라, 모사라, 전능하신 하나님이라, 영존하시는 아버지라, 평강의 왕이라 할 것임이라</p>
       <p class="ref">이사야 9장 6절</p>
       <p class="en">For a child is born to us, a son is given to us. The government will rest on his shoulders. And he will be called: Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace.</p>
     </blockquote>
-    <div class="tree-wrap">
-      <svg class="tree" viewBox="0 0 300 390" role="img" aria-label="십자가를 얹은 성탄 트리">
-        <defs>
-          <radialGradient id="crossGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#fff1c9" stop-opacity="1"/>
-            <stop offset="22%"  stop-color="#ffd98a" stop-opacity=".7"/>
-            <stop offset="55%"  stop-color="#ffc46a" stop-opacity=".25"/>
-            <stop offset="100%" stop-color="#ffc46a" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="bulbGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#ffdb95" stop-opacity=".75"/>
-            <stop offset="100%" stop-color="#ffdb95" stop-opacity="0"/>
-          </radialGradient>
-        </defs>
-        <!-- 바닥에 쌓인 눈 -->
-        <ellipse class="tree-snow" cx="150" cy="350" rx="124" ry="15"/>
-        <!-- 기둥 -->
-        <rect class="tree-trunk" x="138" y="300" width="24" height="46" rx="4"/>
-        <!-- 가지 네 단 -->
-        <path class="tree-body"  d="M150 66 L194 134 L179 128 L165 138 L150 130 L135 138 L121 128 L106 134 Z"/>
-        <path class="tree-body2" d="M150 104 L216 190 L194 183 L172 195 L150 186 L128 195 L106 183 L84 190 Z"/>
-        <path class="tree-body"  d="M150 148 L238 252 L209 244 L179 257 L150 248 L121 257 L91 244 L62 252 Z"/>
-        <path class="tree-body2" d="M150 196 L260 316 L223 307 L186 322 L150 312 L114 322 L77 307 L40 316 Z"/>
-        <!-- 가지에 앉은 눈 -->
-        <g class="tree-snow">
-          <ellipse cx="194" cy="134" rx="11" ry="4.5"/>
-          <ellipse cx="179" cy="128" rx="10" ry="4"/>
-          <ellipse cx="165" cy="138" rx="10" ry="4"/>
-          <ellipse cx="150" cy="130" rx="10" ry="4"/>
-          <ellipse cx="135" cy="138" rx="10" ry="4"/>
-          <ellipse cx="121" cy="128" rx="10" ry="4"/>
-          <ellipse cx="106" cy="134" rx="11" ry="4.5"/>
-          <ellipse cx="216" cy="190" rx="12" ry="4.5"/>
-          <ellipse cx="194" cy="183" rx="11" ry="4"/>
-          <ellipse cx="172" cy="195" rx="11" ry="4"/>
-          <ellipse cx="150" cy="186" rx="11" ry="4"/>
-          <ellipse cx="128" cy="195" rx="11" ry="4"/>
-          <ellipse cx="106" cy="183" rx="11" ry="4"/>
-          <ellipse cx="84"  cy="190" rx="12" ry="4.5"/>
-          <ellipse cx="238" cy="252" rx="13" ry="5"/>
-          <ellipse cx="209" cy="244" rx="12" ry="4.5"/>
-          <ellipse cx="179" cy="257" rx="12" ry="4.5"/>
-          <ellipse cx="150" cy="248" rx="12" ry="4.5"/>
-          <ellipse cx="121" cy="257" rx="12" ry="4.5"/>
-          <ellipse cx="91"  cy="244" rx="12" ry="4.5"/>
-          <ellipse cx="62"  cy="252" rx="13" ry="5"/>
-          <ellipse cx="260" cy="316" rx="14" ry="5"/>
-          <ellipse cx="223" cy="307" rx="13" ry="5"/>
-          <ellipse cx="186" cy="322" rx="13" ry="5"/>
-          <ellipse cx="150" cy="312" rx="13" ry="5"/>
-          <ellipse cx="114" cy="322" rx="13" ry="5"/>
-          <ellipse cx="77"  cy="307" rx="13" ry="5"/>
-          <ellipse cx="40"  cy="316" rx="14" ry="5"/>
-        </g>
-        <!-- 트리 전구 -->
-        <g class="bulb" style="animation-delay:0s">
-          <circle cx="150" cy="100" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="100" r="4" fill="#ffd98a"/>
-          <circle cx="112" cy="168" r="11" fill="url(#bulbGlow)"/><circle cx="112" cy="168" r="4" fill="#ffb3a0"/>
-          <circle cx="196" cy="222" r="11" fill="url(#bulbGlow)"/><circle cx="196" cy="222" r="4" fill="#fff0c2"/>
-          <circle cx="104" cy="278" r="11" fill="url(#bulbGlow)"/><circle cx="104" cy="278" r="4" fill="#ffd98a"/>
-        </g>
-        <g class="bulb" style="animation-delay:1.1s">
-          <circle cx="186" cy="166" r="11" fill="url(#bulbGlow)"/><circle cx="186" cy="166" r="4" fill="#fff0c2"/>
-          <circle cx="150" cy="214" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="214" r="4" fill="#ffc96b"/>
-          <circle cx="206" cy="284" r="11" fill="url(#bulbGlow)"/><circle cx="206" cy="284" r="4" fill="#ffb3a0"/>
-          <circle cx="134" cy="238" r="11" fill="url(#bulbGlow)"/><circle cx="134" cy="238" r="4" fill="#ffd98a"/>
-        </g>
-        <g class="bulb" style="animation-delay:2.2s">
-          <circle cx="150" cy="156" r="11" fill="url(#bulbGlow)"/><circle cx="150" cy="156" r="4" fill="#ffb3a0"/>
-          <circle cx="118" cy="214" r="11" fill="url(#bulbGlow)"/><circle cx="118" cy="214" r="4" fill="#fff0c2"/>
-          <circle cx="166" cy="292" r="11" fill="url(#bulbGlow)"/><circle cx="166" cy="292" r="4" fill="#ffd98a"/>
-          <circle cx="226" cy="268" r="11" fill="url(#bulbGlow)"/><circle cx="226" cy="268" r="4" fill="#ffc96b"/>
-        </g>
-        <!-- 십자가 -->
-        <circle class="cross-halo" cx="150" cy="38" r="96" fill="url(#crossGlow)"/>
-        <circle class="cross-ring" cx="150" cy="38" r="34" style="transform-origin:150px 38px"/>
-        <path class="cross-mark" d="M143 8 h14 v16 h14 v14 h-14 v28 h-14 v-28 h-14 v-14 h14 z"/>
-      </svg>
-      <button class="cross-btn" id="cross" type="button" aria-label="십자가에 불 켜기"></button>
-    </div>
-    <p class="hint" id="hint">십자가를 눌러 불을 켜 주세요</p>
     <button class="skip" id="skip" type="button">초대장 바로 보기</button>
   </section>
   <!-- ───────── 초대장 ───────── -->
   <section class="invite gutter" id="invite" hidden aria-label="초대장">
-    <p class="intro">우리 교회 식구들과 함께 차리는 생신 잔치에 초대합니다.<br>오셔서 같이 먹고, 같이 노래해요.</p>
+    <header class="invite-head">
+      <svg class="spark" viewBox="0 0 320 40" aria-hidden="true">
+        <line x1="0" y1="20" x2="138" y2="20" stroke="#e6c88c" stroke-opacity=".45" stroke-width="1"/>
+        <line x1="182" y1="20" x2="320" y2="20" stroke="#e6c88c" stroke-opacity=".45" stroke-width="1"/>
+        <path d="M160 2 C161.6 14 166 18.4 178 20 C166 21.6 161.6 26 160 38 C158.4 26 154 21.6 142 20 C154 18.4 158.4 14 160 2 Z" fill="#e6c88c"/>
+      </svg>
+      <p class="invite-script">Merry Christmas</p>
+      <p class="intro">우리 교회 식구들과 함께 차리는 생신 잔치에 초대합니다.<br>오셔서 같이 먹고, 같이 노래해요.</p>
+    </header>
     <section class="panel" aria-labelledby="when-where">
       <h2 class="section-title" id="when-where">언제, 어디서</h2>
       <dl class="facts">
@@ -593,6 +538,7 @@
     <footer class="foot">
       <div class="banner" id="mode-banner" hidden></div>
       <button class="btn-ghost" type="button" id="copy-link">초대장 링크 복사</button>
+      <p class="sign">See you on Christmas</p>
       <p>성탄의 밤, 반가운 얼굴로 만나요.</p>
     </footer>
   </section>
@@ -600,29 +546,310 @@
 <script>
 (function () {
   "use strict";
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* ───────── 트리 그리기 ─────────
+     바늘잎 수천 가닥은 한 번만 그려 두고(어두운 판 + 불 받은 판),
+     전구 천여 개만 매 순간 다시 그린다. 같은 씨앗을 써서 열 때마다 같은 트리가 나온다. */
+  function seeded(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function makeGlowSprite(r, g, b) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 64;
+    var x = c.getContext("2d");
+    var grad = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0,    "rgba(255,255,255,1)");
+    grad.addColorStop(0.08, "rgba(" + r + "," + g + "," + b + ",1)");
+    grad.addColorStop(0.22, "rgba(" + r + "," + g + "," + b + ",.45)");
+    grad.addColorStop(0.5,  "rgba(" + r + "," + g + "," + b + ",.1)");
+    grad.addColorStop(1,    "rgba(" + r + "," + g + "," + b + ",0)");
+    x.fillStyle = grad;
+    x.fillRect(0, 0, 64, 64);
+    return c;
+  }
+  var canvas = document.getElementById("tree-canvas");
+  var wrap   = document.getElementById("tree-wrap");
+  var ctx    = canvas.getContext("2d");
+  var spriteWarm  = makeGlowSprite(255, 226, 168);
+  var spriteAmber = makeGlowSprite(255, 186, 96);
+  var geo = null;          // 트리 크기와 위치
+  var foliageDark = null;  // 불 꺼진 바늘잎
+  var foliageLit  = null;  // 불 받은 바늘잎
+  var lights = [];
+  var UNLIT = 0.24;
+  var level = UNLIT, levelTarget = UNLIT; // 트리 전구 밝기: 처음엔 은은하게
+  var cross = 0,    crossTarget = 0;      // 십자가 빛
+  var running = true;
+  function halfWidth(t) {
+    /* t: 꼭대기 0 → 밑동 1. 단마다 아래가 살짝 퍼지는 전나무 실루엣 */
+    var tiers = 7;
+    var f = t * tiers;
+    var frac = f - Math.floor(f);
+    var flare = 0.84 + 0.16 * Math.pow(frac, 1.6);
+    return geo.base * Math.pow(t, 0.95) * flare;
+  }
+  function layout() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var cr = canvas.getBoundingClientRect();
+    var wr = wrap.getBoundingClientRect();
+    if (!cr.width || !wr.width) { return false; }
+    canvas.width  = Math.round(cr.width * dpr);
+    canvas.height = Math.round(cr.height * dpr);
+    var ox = wr.left - cr.left;
+    var oy = wr.top - cr.top;
+    var w = wr.width, h = wr.height;
+    geo = {
+      dpr: dpr,
+      cw: cr.width, ch: cr.height,
+      cx: ox + w / 2,
+      top: oy + h * 0.13,
+      bottom: oy + h * 0.985,
+      base: w * 0.47,
+      crossY: oy + h * 0.083,
+      crossH: h * 0.085,
+      w: w, h: h
+    };
+    buildFoliage();
+    buildLights();
+    return true;
+  }
+  function treePath(x, inset) {
+    var steps = 60;
+    x.beginPath();
+    x.moveTo(geo.cx, geo.top);
+    for (var i = 1; i <= steps; i++) {
+      var t = i / steps;
+      x.lineTo(geo.cx + halfWidth(t) * inset, geo.top + t * (geo.bottom - geo.top));
+    }
+    for (var j = steps; j >= 1; j--) {
+      var t2 = j / steps;
+      x.lineTo(geo.cx - halfWidth(t2) * inset, geo.top + t2 * (geo.bottom - geo.top));
+    }
+    x.closePath();
+  }
+  function buildFoliage() {
+    var dpr = geo.dpr;
+    foliageDark = document.createElement("canvas");
+    foliageLit  = document.createElement("canvas");
+    foliageDark.width = foliageLit.width = canvas.width;
+    foliageDark.height = foliageLit.height = canvas.height;
+    var dk = foliageDark.getContext("2d");
+    var lt = foliageLit.getContext("2d");
+    dk.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lt.setTransform(dpr, 0, 0, dpr, 0, 0);
+    /* 속은 깊은 그늘로 채워 빈 틈이 없게 */
+    treePath(dk, 0.9); dk.fillStyle = "#06120c"; dk.fill();
+    treePath(lt, 0.9); lt.fillStyle = "#2a2c12"; lt.fill();
+    var rnd = seeded(20261220);
+    var count = Math.round(geo.w * geo.h / 16);
+    var span = geo.bottom - geo.top;
+    for (var i = 0; i < count; i++) {
+      var t = Math.sqrt(rnd());
+      var hw = halfWidth(t);
+      var u = rnd() * 2 - 1;
+      u = (u < 0 ? -1 : 1) * Math.pow(Math.abs(u), 0.82);
+      /* 몇 가닥은 실루엣 밖으로 삐져나와 가장자리가 복슬복슬하게 */
+      var fluffy = rnd() < 0.09;
+      if (fluffy) { u = (u < 0 ? -1 : 1) * (0.96 + rnd() * 0.12); }
+      var x = geo.cx + u * hw;
+      var y = geo.top + t * span + (rnd() - 0.5) * 6;
+      var ang = Math.PI / 2 - u * 1.0 + (rnd() - 0.5) * 1.5;
+      var len = (4 + rnd() * 9) * (0.55 + t * 0.6) * (fluffy ? 1.5 : 1);
+      var ex = x + Math.cos(ang) * len;
+      var ey = y + Math.sin(ang) * len;
+      /* 명암은 거의 무작위로 — 가운데만 어두우면 트리가 반으로 갈라져 보인다 */
+      var s = Math.min(1, Math.max(0, 0.18 + 0.62 * rnd() + 0.2 * Math.abs(u)));
+      var a = 0.5 + rnd() * 0.45;
+      var lw = 0.8 + rnd() * 0.7;
+      var dark = "rgba(" + Math.round(lerp(8, 34, s)) + "," + Math.round(lerp(20, 58, s)) + "," + Math.round(lerp(14, 38, s)) + "," + a + ")";
+      var lit  = "rgba(" + Math.round(lerp(70, 214, s)) + "," + Math.round(lerp(80, 200, s)) + "," + Math.round(lerp(26, 96, s)) + "," + a + ")";
+      [[dk, dark], [lt, lit]].forEach(function (pair) {
+        var c = pair[0];
+        c.strokeStyle = pair[1];
+        c.lineWidth = lw;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(x, y);
+        c.lineTo(ex, ey);
+        for (var k = 1; k <= 3; k++) {
+          var px = lerp(x, ex, k / 4), py = lerp(y, ey, k / 4);
+          var nl = len * 0.42;
+          c.moveTo(px, py);
+          c.lineTo(px + Math.cos(ang - 0.7) * nl, py + Math.sin(ang - 0.7) * nl);
+          c.moveTo(px, py);
+          c.lineTo(px + Math.cos(ang + 0.7) * nl, py + Math.sin(ang + 0.7) * nl);
+        }
+        c.stroke();
+      });
+    }
+    /* 밑동 */
+    [[dk, "#1a120c"], [lt, "#3a2818"]].forEach(function (pair) {
+      var c = pair[0];
+      c.fillStyle = pair[1];
+      c.fillRect(geo.cx - geo.w * 0.035, geo.bottom - geo.h * 0.02, geo.w * 0.07, geo.h * 0.05);
+    });
+  }
+  function buildLights() {
+    var rnd = seeded(1225);
+    var count = Math.round(geo.w * geo.h / 52);
+    var span = geo.bottom - geo.top;
+    lights = [];
+    for (var i = 0; i < count; i++) {
+      var t = 0.02 + Math.sqrt(rnd()) * 0.97;
+      var u = rnd() * 2 - 1;
+      u = (u < 0 ? -1 : 1) * Math.pow(Math.abs(u), 0.78);
+      var big = rnd() < 0.05;
+      lights.push({
+        x: geo.cx + u * halfWidth(t) * 0.97 + (rnd() - 0.5) * 3,
+        y: geo.top + t * span + (rnd() - 0.5) * 4,
+        r: big ? 2 + rnd() * 1.2 : 0.6 + rnd() * 1.1,
+        base: 0.55 + rnd() * 0.45,
+        phase: rnd() * Math.PI * 2,
+        speed: 0.5 + rnd() * 1.9,
+        amber: rnd() < 0.14
+      });
+    }
+  }
+  function drawCross(now) {
+    var cx = geo.cx, cy = geo.crossY, H = geo.crossH;
+    var bar = H * 0.17, arm = H * 0.66;
+    if (cross > 0.01) {
+      /* 빛무리 */
+      var halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, geo.w * 0.62);
+      halo.addColorStop(0,    "rgba(255,244,214," + (0.9 * cross) + ")");
+      halo.addColorStop(0.12, "rgba(255,214,140," + (0.5 * cross) + ")");
+      halo.addColorStop(0.4,  "rgba(255,186,96," + (0.14 * cross) + ")");
+      halo.addColorStop(1,    "rgba(255,186,96,0)");
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = halo;
+      ctx.fillRect(cx - geo.w, cy - geo.w, geo.w * 2, geo.w * 2);
+      /* 천천히 도는 빛살 */
+      var rot = reduceMotion ? 0 : now * 0.00006;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+      for (var i = 0; i < 16; i++) {
+        var a = (i / 16) * Math.PI * 2;
+        var len = geo.w * (i % 2 ? 0.34 : 0.52);
+        var g = ctx.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
+        g.addColorStop(0, "rgba(255,228,170," + (0.32 * cross) + ")");
+        g.addColorStop(1, "rgba(255,228,170,0)");
+        ctx.strokeStyle = g;
+        ctx.lineWidth = i % 2 ? 1 : 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.globalCompositeOperation = "source-over";
+    } else {
+      /* 켜지기 전: 누르라는 고리가 숨 쉬듯 */
+      var p = reduceMotion ? 0.5 : 0.5 + 0.5 * Math.sin(now * 0.0024);
+      ctx.strokeStyle = "rgba(230,214,170," + (0.12 + 0.3 * p) + ")";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, H * (0.72 + 0.12 * p), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    /* 십자가 */
+    ctx.save();
+    ctx.shadowColor = "rgba(255,206,120," + (0.25 + 0.75 * cross) + ")";
+    ctx.shadowBlur = 6 + 26 * cross;
+    var r = Math.round(lerp(150, 255, cross)), g2 = Math.round(lerp(142, 240, cross)), b = Math.round(lerp(118, 200, cross));
+    ctx.fillStyle = "rgb(" + r + "," + g2 + "," + b + ")";
+    ctx.fillRect(cx - bar / 2, cy - H / 2, bar, H);
+    ctx.fillRect(cx - arm / 2, cy - H * 0.27, arm, bar);
+    ctx.restore();
+  }
+  function frame(now) {
+    if (!running || !geo) { return; }
+    level += (levelTarget - level) * (reduceMotion ? 1 : 0.03);
+    cross += (crossTarget - cross) * (reduceMotion ? 1 : 0.07);
+    ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
+    ctx.clearRect(0, 0, geo.cw, geo.ch);
+    /* 트리 뒤로 퍼지는 빛 */
+    var midY = geo.top + (geo.bottom - geo.top) * 0.58;
+    var bloom = ctx.createRadialGradient(geo.cx, midY, 0, geo.cx, midY, geo.w * 0.95);
+    bloom.addColorStop(0, "rgba(255,200,120," + (0.04 + 0.42 * level) + ")");
+    bloom.addColorStop(0.55, "rgba(255,180,90," + (0.01 + 0.14 * level) + ")");
+    bloom.addColorStop(1, "rgba(255,180,90,0)");
+    ctx.fillStyle = bloom;
+    ctx.fillRect(0, 0, geo.cw, geo.ch);
+    /* 바늘잎: 어두운 판 위에 불 받은 판을 밝기만큼 겹친다 */
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(foliageDark, 0, 0);
+    /* 켜기 전엔 바늘잎이 거의 어둡고, 켜지면 노란빛 초록으로 살아난다 */
+    var litMix = Math.max(0, Math.min(1, (level - UNLIT) / (1 - UNLIT)));
+    ctx.globalAlpha = 0.12 + 0.88 * Math.pow(litMix, 1.1);
+    ctx.drawImage(foliageLit, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
+    /* 전구 */
+    ctx.globalCompositeOperation = "lighter";
+    var tsec = now / 1000;
+    var glow = 5 + 6 * level;
+    for (var i = 0; i < lights.length; i++) {
+      var L = lights[i];
+      var tw = reduceMotion ? 0.85 : 0.62 + 0.38 * Math.sin(tsec * L.speed + L.phase);
+      var a = level * L.base * tw;
+      if (a < 0.015) { continue; }
+      ctx.globalAlpha = a > 1 ? 1 : a;
+      var s = L.r * glow;
+      ctx.drawImage(L.amber ? spriteAmber : spriteWarm, L.x - s, L.y - s, s * 2, s * 2);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    drawCross(now);
+    window.requestAnimationFrame(frame);
+  }
+  function start() {
+    if (!layout()) { window.setTimeout(start, 100); return; }
+    window.requestAnimationFrame(frame);
+  }
+  var resizeTimer = 0;
+  window.addEventListener("resize", function () {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(layout, 150);
+  });
+  /* 첫 화면이 안 보이면 그리기를 쉰다 (배터리) */
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      var visible = entries[0].isIntersecting;
+      if (visible && !running) { running = true; window.requestAnimationFrame(frame); }
+      else if (!visible) { running = false; }
+    }).observe(document.getElementById("stage"));
+  }
+  start();
   /* ───────── 십자가에 불 켜기 ───────── */
   var stage  = document.getElementById("stage");
-  var cross  = document.getElementById("cross");
   var hint   = document.getElementById("hint");
-  var skip   = document.getElementById("skip");
   var invite = document.getElementById("invite");
   var lit = false;
   function light() {
     if (lit) { return; }
     lit = true;
+    crossTarget = 1;
+    levelTarget = 1;
     stage.classList.add("is-lit");
     document.body.classList.add("lit");
-    hint.textContent = "불이 켜졌어요";
     invite.hidden = false;
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () { invite.classList.add("in"); });
     });
     window.setTimeout(function () {
       invite.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 1800);
+    }, 2600);
   }
-  cross.addEventListener("click", light);
-  skip.addEventListener("click", light);
+  document.getElementById("cross").addEventListener("click", light);
+  document.getElementById("skip").addEventListener("click", light);
+  window.__lightTree = light;
   /* ───────── 참석 응답 ───────── */
   /* 응답이 모이는 곳 (Supabase). 이 키는 공개용이라 초대장에 들어가도 괜찮습니다.
      명단 읽기와 한 줄 추가만 허용되고, 고치거나 지우는 건 막혀 있습니다. */
@@ -663,7 +890,8 @@
       var li = document.createElement("li");
       li.className = "guest" + (entry.attending ? "" : " guest--no");
       var mark = document.createElement("span");
-      mark.textContent = entry.attending ? "🎄" : "🙏";
+      mark.className = "guest__mark";
+      mark.textContent = entry.attending ? "✦" : "–";
       li.appendChild(mark);
       var head = document.createElement("span");
       var name = document.createElement("span");
