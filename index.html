@@ -72,7 +72,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: 2.75rem 1.75rem;
+    padding-block: 2rem 1.4rem;
   }
   .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   .confetti i {
@@ -127,17 +127,17 @@
   }
   .scripture {
     position: relative;
-    margin: 1.3rem 0 0;
+    margin: 1rem 0 0;
     max-width: 23rem;
     display: grid;
-    gap: .5rem;
+    gap: .35rem;
     text-align: center;
   }
   .scripture p {
     margin: 0;
     font-family: var(--display);
-    font-size: .88rem;
-    line-height: 1.95;
+    font-size: .82rem;
+    line-height: 1.8;
     color: var(--olive-soft);
     word-break: keep-all;
   }
@@ -148,15 +148,15 @@
     color: var(--ink-soft);
   }
   .scripture .en {
-    font-size: .72rem;
-    line-height: 1.9;
+    font-size: .67rem;
+    line-height: 1.75;
     letter-spacing: .012em;
     color: #a39e8c;
-    margin-top: .15rem;
+    margin-top: .1rem;
   }
   .cake-wrap {
     position: relative;
-    width: min(17rem, 74%);
+    width: min(15rem, 62%);
     margin-top: auto;
   }
   .cake { display: block; width: 100%; height: auto; }
@@ -171,11 +171,11 @@
   /* ───────── 성냥 ───────── */
   .lighter {
     position: relative;
-    margin-top: 1.4rem;
+    margin-top: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .55rem;
+    gap: .4rem;
     width: 100%;
   }
   .match {
@@ -185,7 +185,7 @@
     padding: .35rem;
     cursor: grab;
     touch-action: none;
-    width: 3.4rem;
+    width: 3rem;
     transition: transform .45s cubic-bezier(.2,.8,.3,1), opacity .5s ease;
   }
   .match svg { display: block; width: 100%; height: auto; }
@@ -238,6 +238,7 @@
     line-height: 1.95;
     color: var(--olive);
     text-wrap: balance;
+    word-break: keep-all;
   }
   .panel {
     background: var(--card);
