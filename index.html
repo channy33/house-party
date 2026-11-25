@@ -323,8 +323,10 @@
     color: #a89f8a;
     margin-top: .15rem;
   }
+  /* 폰에서 '동작 줄이기'(아이폰)·'애니메이션 제거'(갤럭시)나 절전 모드를 켜 두면 이 조건이 걸린다.
+     눈과 반짝임은 은은한 배경이라 그대로 두고, 옆으로 흔들리는 것만 멈춘다. */
   @media (prefers-reduced-motion: reduce) {
-    .snow i, .hint { animation: none !important; }
+    .snow i { animation-name: fall; }
   }
   /* ───────── 초대장 ───────── */
   /* 배경은 body(짙은 초록)가 맡고 이 판은 투명하게 둔다 — 그래야 뒤로 눈이 비친다 */
@@ -850,6 +852,8 @@
 <script>
 (function () {
   "use strict";
+  /* '동작 줄이기'가 켜진 폰에서도 반짝임·눈은 그대로 둔다 (은은한 배경이라).
+     빙글 도는 빛살만 멈춘다. */
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* ───────── 트리 그리기 ─────────
      바늘잎 수천 가닥은 한 번만 그려 두고(어두운 판 + 불 받은 판),
@@ -997,7 +1001,7 @@
       var beads = garlands[g];
       for (var b = 0; b < beads.length; b++) {
         var B = beads[b];
-        var sp = reduceMotion ? 0.8 : 0.65 + 0.35 * Math.sin(tsec * 1.3 + B.tw);
+        var sp = 0.65 + 0.35 * Math.sin(tsec * 1.3 + B.tw);
         ctx.globalAlpha = (0.28 + 0.6 * litMix) * sp;
         ctx.fillStyle = "#ece7dc";
         ctx.beginPath();
@@ -1192,7 +1196,7 @@
       ctx.globalCompositeOperation = "source-over";
     } else {
       /* 켜지기 전: 누르라는 고리가 숨 쉬듯 */
-      var p = reduceMotion ? 0.5 : 0.5 + 0.5 * Math.sin(now * 0.0024);
+      var p = 0.5 + 0.5 * Math.sin(now * 0.0024);
       ctx.strokeStyle = "rgba(230,214,170," + (0.12 + 0.3 * p) + ")";
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -1211,8 +1215,8 @@
   }
   function frame(now) {
     if (!running || !geo) { return; }
-    level += (levelTarget - level) * (reduceMotion ? 1 : 0.03);
-    cross += (crossTarget - cross) * (reduceMotion ? 1 : 0.07);
+    level += (levelTarget - level) * 0.03;
+    cross += (crossTarget - cross) * 0.07;
     /* 0: 켜기 전, 1: 다 켜짐 */
     var litMix = Math.max(0, Math.min(1, (level - UNLIT) / (1 - UNLIT)));
     ctx.setTransform(geo.dpr, 0, 0, geo.dpr, 0, 0);
@@ -1243,8 +1247,7 @@
       var L = lights[i];
       var wave = 0.5 + 0.5 * Math.sin(tsec * L.speed + L.phase);
       /* 가장자리는 잠깐씩 톡 튀듯 반짝이고, 안쪽은 부드럽게 숨 쉰다 */
-      var tw = reduceMotion ? 0.85
-        : (L.edge ? 0.3 + 0.7 * Math.pow(wave, 2.4) : 0.62 + 0.38 * (wave * 2 - 1));
+      var tw = L.edge ? 0.3 + 0.7 * Math.pow(wave, 2.4) : 0.62 + 0.38 * (wave * 2 - 1);
       /* 켜기 전: 일부만 희미하게. 누르면 나머지가 저마다 조금씩 늦게 하나둘 켜진다 */
       var on = L.early
         ? 0.45 + 0.55 * litMix
