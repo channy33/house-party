@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다</title>
 <meta name="description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
-<meta name="build" content="23cee9f9ff">
+<meta name="build" content="b074853fae">
 <meta property="og:type" content="website">
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="📅 12.20(주일) 5부 예배 후 📍 여의도순복음교회 대성전 지하 3층 실로암식당 🍽 준비물: 예수님과 함께 먹을 음식">
@@ -451,9 +451,19 @@
     opacity: 0;
     transition: opacity .8s ease;
   }
-  .side-nav[hidden] { display: none; }
   .side-nav.is-on { opacity: 1; }
-  .side-nav a {
+  .side-nav__go, .side-nav__share { display: flex; flex-direction: column; gap: 2px; }
+  /* 바로 가기는 십자가를 켠 뒤(초대장이 열린 뒤)부터, 공유는 처음부터 */
+  body:not(.lit) .side-nav__go { display: none; }
+  body.lit .side-nav__share { border-top: 1px solid rgba(232, 194, 122, .25); margin-top: 2px; padding-top: 3px; }
+  .side-nav button {
+    appearance: none;
+    font: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .side-nav a, .side-nav button {
     display: block;
     font-size: .66rem;
     line-height: 1.2;
@@ -465,6 +475,7 @@
     border-radius: 10px;
     word-break: keep-all;
   }
+  .side-nav__share button { color: #e8c27a; }
   .side-nav a.is-here { background: rgba(232, 194, 122, .22); color: #ffe3a6; }
   .side-nav a:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
   .panel { scroll-margin-top: 14px; }
@@ -881,16 +892,6 @@
     <div class="sky sky--night" aria-hidden="true"></div>
     <div class="sky sky--warm" aria-hidden="true"></div>
     <div class="flash" aria-hidden="true"></div>
-    <div class="share-bar">
-      <button class="share-btn" id="share-copy" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        <span>링크 복사</span>
-      </button>
-      <button class="share-btn" id="share-qr" type="button" aria-haspopup="dialog">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4 4h1v1H4zM11 4h1v1h-1zM4 11h1v1H4zM9 9h2v2H9zM12 9h2v2h-2zM9 12h2v2H9zM12 12h2v2h-2z" fill="currentColor"/></svg>
-        <span>QR 공유</span>
-      </button>
-    </div>
     <p class="org">여의도순복음교회 가스펠선교부<br>축복교구</p>
     <div class="badge">
       <svg class="badge__orn badge__orn--top" viewBox="0 0 380 36" aria-hidden="true"><use href="#flourish"/></svg>
@@ -917,12 +918,19 @@
     <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5L8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <!-- 오른쪽 바로 가기: 십자가를 켠 뒤부터 언제든 눌러 이동 -->
-  <nav class="side-nav" id="side-nav" hidden aria-label="바로 가기">
-    <a href="#stage" data-go="stage">홈</a>
-    <a href="#when-where" data-go="when-where">안내</a>
-    <a href="#program-title" data-go="program-title">순서</a>
-    <a href="#rsvp-title" data-go="rsvp-title">참석여부</a>
-    <a href="#gb-title" data-go="gb-title">방명록</a>
+  <nav class="side-nav" id="side-nav" aria-label="바로 가기와 공유">
+    <div class="side-nav__go">
+      <a href="#stage" data-go="stage">홈</a>
+      <a href="#when-where" data-go="when-where">안내</a>
+      <a href="#program-title" data-go="program-title">순서</a>
+      <a href="#rsvp-title" data-go="rsvp-title">참석여부</a>
+      <a href="#gb-title" data-go="gb-title">방명록</a>
+    </div>
+    <div class="side-nav__share">
+      <button type="button" id="side-kakao">카톡공유</button>
+      <button type="button" id="side-link">링크공유</button>
+      <button type="button" id="side-qr" aria-haspopup="dialog">QR공유</button>
+    </div>
   </nav>
   <section class="invite gutter" id="invite" hidden aria-label="초대장">
     <header class="invite-head">
@@ -1527,12 +1535,8 @@
   var lit = false;
   /* 오른쪽 바로 가기 */
   var sideNav = document.getElementById("side-nav");
-  function showNav() {
-    sideNav.hidden = false;
-    window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () { sideNav.classList.add("is-on"); });
-    });
-  }
+  function showNav() { markHere(); }
+  window.requestAnimationFrame(function () { sideNav.classList.add("is-on"); });
   sideNav.addEventListener("click", function (event) {
     var link = event.target.closest("a[data-go]");
     if (!link) { return; }
@@ -1553,7 +1557,7 @@
   var spyQueued = false;
   function markHere() {
     spyQueued = false;
-    if (sideNav.hidden) { return; }
+    if (!lit) { return; }
     var line = window.innerHeight * 0.34, here = "stage";
     var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
     spyBoxes.forEach(function (b) {
@@ -1743,10 +1747,23 @@
     qrSheet.hidden = true;
     if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
   }
-  document.getElementById("share-copy").addEventListener("click", function () {
-    copyLink(this.querySelector("span"), "복사했어요");
+  /* 카톡공유: 폰에서는 공유 창을 띄워 카카오톡을 고르게 하고, 공유 창이 없으면 링크를 복사한다 */
+  document.getElementById("side-kakao").addEventListener("click", function () {
+    var btn = this;
+    if (navigator.share) {
+      navigator.share({
+        title: document.title,
+        text: "12.20(주일) 5부 예배 후 · 여의도순복음교회 대성전 지하 3층 실로암식당",
+        url: SHARE_URL
+      }).catch(function () {});
+    } else {
+      copyLink(btn, "복사됨");
+    }
   });
-  document.getElementById("share-qr").addEventListener("click", openQR);
+  document.getElementById("side-link").addEventListener("click", function () {
+    copyLink(this, "복사됨");
+  });
+  document.getElementById("side-qr").addEventListener("click", openQR);
   document.getElementById("foot-qr").addEventListener("click", openQR);
   document.getElementById("qr-copy").addEventListener("click", function () {
     copyLink(this, "복사했어요");
