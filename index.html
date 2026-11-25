@@ -9,7 +9,7 @@
 <meta property="og:title" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
 <meta property="og:description" content="2026.12.20(주일) 5부 예배 후, 여의도순복음교회 대성전 지하 3층 실로암식당">
 <meta property="og:url" content="https://channy33.github.io/house-party/">
-<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=06e36ca9">
+<meta property="og:image" content="https://channy33.github.io/house-party/og.png?v=971cbdb6">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="축복교구 하우스파티 · 예수님 2026번째 생일에 여러분을 초대합니다">
@@ -295,8 +295,8 @@
   .tree-wrap {
     position: relative;
     z-index: 2;
-    height: clamp(12.5rem, calc(100vh - 29rem), 24rem);
-    height: clamp(12.5rem, calc(100svh - 29rem), 24rem);
+    height: clamp(15rem, calc(100vh - 24.5rem), 24.3rem);
+    height: clamp(15rem, calc(100svh - 24.5rem), 24.3rem);
     aspect-ratio: .74;
     max-width: 74%;
     margin-top: .7rem;
@@ -346,15 +346,6 @@
     word-break: keep-all;
   }
   .scripture .ref { font-size: .76rem; letter-spacing: .1em; color: var(--muted); }
-  .scripture .ref--en { font-family: var(--script); font-style: italic; font-size: .84rem; letter-spacing: .08em; }
-  .scripture .en {
-    font-family: var(--script);
-    font-style: italic;
-    font-size: .86rem;
-    line-height: 1.55;
-    color: #a89f8a;
-    margin-top: .15rem;
-  }
   /* 말씀: 켜기 전에는 어둠 속에 희미하게, 십자가 빛이 퍼지면 뒤따라 금빛으로 밝아진다 */
   .scripture p, .scripture .ref {
     transition: color 1.8s ease 1s, text-shadow 1.8s ease 1s;
@@ -366,7 +357,6 @@
     color: #fff1cf;
     text-shadow: 0 0 12px rgba(255, 200, 110, .55), 0 0 2px rgba(255, 220, 160, .5);
   }
-  .is-lit .scripture .en { color: #e9d7ad; text-shadow: 0 0 10px rgba(255, 200, 110, .35); }
   .is-lit .scripture .ref { color: #e8c27a; }
   /* 폰에서 '동작 줄이기'(아이폰)·'애니메이션 제거'(갤럭시)나 절전 모드를 켜 두면 이 조건이 걸린다.
      눈과 반짝임은 은은한 배경이라 그대로 두고, 옆으로 흔들리는 것만 멈춘다. */
@@ -405,8 +395,8 @@
     0%, 100% { transform: translate(var(--tx), 0); }
     50%      { transform: translate(var(--tx), 4px); }
   }
-  /* 아주 짧은 화면에서는 가운데 '이사야 9장 6절'을 가리지 않게 오른쪽 아래 구석으로 */
-  @media (max-height: 640px) {
+  /* 짧은 화면에서는 가운데 '이사야 9장 6절'을 가리지 않게 오른쪽 아래 구석으로 */
+  @media (max-height: 780px) {
     .to-invite { --tx: 0; left: auto; right: max(14px, env(safe-area-inset-right, 0px)); font-size: .8rem; padding: .4rem .85rem; }
   }
   @media (prefers-reduced-motion: reduce) { .to-invite.is-on { animation: none; } }
@@ -850,8 +840,6 @@
     <blockquote class="scripture">
       <p class="ko">“이는 한 아기가 우리에게 났고 한 아들을 우리에게 주신 바 되었는데 그의 어깨에는 정사를 메었고 그의 이름은 기묘자라, 모사라, 전능하신 하나님이라, 영존하시는 아버지라, 평강의 왕이라 할 것임이라”</p>
       <p class="ref">이사야 9장 6절</p>
-      <p class="en">“For a child is born to us, a son is given to us. The government will rest on his shoulders. And he will be called: Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace.”</p>
-      <p class="ref ref--en">Isaiah 9:6</p>
     </blockquote>
   </section>
   <!-- ───────── 초대장 ───────── -->
